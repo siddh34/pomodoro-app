@@ -1,13 +1,17 @@
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import "./App.css";
 
+// pages
+import home_page from "./pages/home_page";
+
 function App() {
-  return (
-    <>
-    <div className="flex items-center justify-center m-10 bg-pink-600 h-25">
-      <h1 className="text-3xl font-bold">The Pomodoro App</h1>
-    </div>
-    </>
-  );
+    return (
+        <Router>
+            <Routes>
+                <Route path="/" element={home_page()} />
+            </Routes>
+        </Router>
+    );
 }
 
 export default App;
