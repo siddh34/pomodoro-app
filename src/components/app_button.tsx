@@ -4,7 +4,7 @@ interface ButtonProps {
   textInside: string;
 }
 
-function button(props: ButtonProps) {
+function app_button(props: ButtonProps) {
   const { color, isDisabled, textInside } = props;
 
   if (isDisabled === true) {
@@ -22,4 +22,4 @@ function button(props: ButtonProps) {
   );
 }
 
-export default button
+export default app_button;
