@@ -1,25 +1,37 @@
 interface ButtonProps {
-  color: string;
-  isDisabled: boolean;
-  textInside: string;
+    color: "pink" | "blue" | "green" | "red";
+    isDisabled: boolean;
+    textInside: string;
 }
 
-function app_button(props: ButtonProps) {
-  const { color, isDisabled, textInside } = props;
+const colorClasses = {
+    pink: "bg-pink-500",
+    blue: "bg-blue-500",
+    green: "bg-green-500",
+    red: "bg-red-500",
+};
 
-  if (isDisabled === true) {
+function AppButton(props: ButtonProps) {
+    const { color, isDisabled, textInside } = props;
+
+    const colorClass = colorClasses[color];
+
+    if (isDisabled) {
+        return (
+            <button
+                className={`flex items-center ${colorClass} opacity-50`}
+                disabled
+            >
+                <span>{textInside}</span>
+            </button>
+        );
+    }
+
     return (
-        <button className={`flex items-center bg-${color} opacity-50`} disabled>
+        <button className={`flex items-center ${colorClass}`}>
             <span>{textInside}</span>
         </button>
     );
-  }
-
-  return (
-    <button className={`flex items-center bg-${color}`}>
-      <span>{textInside}</span>
-    </button>
-  );
 }
 
-export default app_button;
+export default AppButton;

@@ -1,4 +1,4 @@
-import app_button from "../components/app_button";
+import AppButton from "../components/app_button";
 
 
 function home_page() {
@@ -8,7 +8,6 @@ function home_page() {
                 <h1 className="text-3xl font-bold">The Pomodoro App</h1>
             </div>
 
-
             <div className="flex items-center justify-center m-10 bg-red-900 h-80">
                 <div className="flex">
                     <p className="m-10 text-3xl font-bold text-white">
@@ -16,7 +15,9 @@ function home_page() {
                     </p>
                 </div>
                 <div className="flex">
-                    {/* <app_button /> */}
+                    <AppButton color={"pink"} isDisabled={false} textInside={""}/>
+                    <AppButton color={"pink"} isDisabled={false} textInside={""}/>
+                    <AppButton color={"pink"} isDisabled={false} textInside={""}/>
                 </div>
             </div>
         </>
