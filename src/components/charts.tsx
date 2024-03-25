@@ -19,7 +19,7 @@ const data = {
 
 const chart = () => {
     return (
-        <div>
+        <div className="flex flex-col items-center justify-center">
             <Doughnut
                 data={data}
                 options={{
@@ -38,15 +38,8 @@ const chart = () => {
                     responsive: true,
                 }}
             />
-            <div
-                style={{
-                    position: "absolute",
-                    top: "55%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    textAlign: "center",
-                }}
-            >
+            <div className="items-center justify-center">
+                <h3>This chart represents the time</h3>
             </div>
         </div>
     );
