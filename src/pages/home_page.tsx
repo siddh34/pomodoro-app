@@ -1,6 +1,9 @@
 import Chart from "../components/charts";
+import { useNavigate } from "react-router-dom";
 
 function home_page() {
+    const navigate = useNavigate();
+
     return (
         <div className="flex flex-col min-h-screen">
             <div className="flex-grow">
@@ -38,7 +41,7 @@ function home_page() {
                             </button>
                         </div>
                     </div >
-                    <button className="bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl">
+                    <button onClick={() => navigate('/history')} className="px-4 py-2 font-bold text-white bg-emerald-500 rounded-xl">
                         View History
                     </button>
                 </div>
