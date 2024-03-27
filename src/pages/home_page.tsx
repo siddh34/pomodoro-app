@@ -37,7 +37,10 @@ function home_page() {
                                 Break
                             </button>
                         </div>
-                    </div>
+                    </div >
+                    <button className="bg-emerald-500 text-white font-bold py-2 px-4 rounded-xl">
+                        View History
+                    </button>
                 </div>
             </div>
             <footer className="bg-white shadow dark:bg-gray-800">
