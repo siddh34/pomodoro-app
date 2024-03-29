@@ -28,6 +28,19 @@ async fn stop_pomodoro() -> String {
     }
 }
 
+#[tauri::command]
+async fn break_pomodoro() -> String {
+    let output = tokio::process::Command::new("pomodoro-cli")
+        .arg("break")
+        .output()
+        .await;
+
+    match output {
+        Ok(output) => String::from_utf8(output.stdout).unwrap_or_else(|_| "Error converting output to string".to_string()),
+        Err(_) => "Error executing command".to_string(),
+    }
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![start_pomodoro])
@@ -36,6 +49,11 @@ fn main() {
 
     tauri::Builder::default()
     .invoke_handler(tauri::generate_handler![stop_pomodoro])
+    .run(tauri::generate_context!())
+    .expect("Error executing command");
+
+    tauri::Builder::default()
+    .invoke_handler(tauri::generate_handler![break_pomodoro])
     .run(tauri::generate_context!())
     .expect("Error executing command");
 }
