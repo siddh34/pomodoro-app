@@ -43,17 +43,7 @@ async fn break_pomodoro() -> String {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_pomodoro])
+        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro])
         .run(tauri::generate_context!())
         .expect("Error executing command");
-
-    tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![stop_pomodoro])
-    .run(tauri::generate_context!())
-    .expect("Error executing command");
-
-    tauri::Builder::default()
-    .invoke_handler(tauri::generate_handler![break_pomodoro])
-    .run(tauri::generate_context!())
-    .expect("Error executing command");
 }
