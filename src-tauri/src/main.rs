@@ -4,40 +4,40 @@
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
 async fn start_pomodoro() -> String {
-    let output = tokio::process::Command::new("pomodoro-cli")
+    let output = tokio::process::Command::new("pomodoro")
         .arg("start")
         .output()
         .await;
 
     match output {
         Ok(output) => String::from_utf8(output.stdout).unwrap_or_else(|_| "Error converting output to string".to_string()),
-        Err(_) => "Error executing command".to_string(),
+        Err(e) => e.to_string(),
     }
 }
 
 #[tauri::command]
 async fn stop_pomodoro() -> String {
-    let output = tokio::process::Command::new("pomodoro-cli")
+    let output = tokio::process::Command::new("pomodoro")
         .arg("cancel")
         .output()
         .await;
 
     match output {
         Ok(output) => String::from_utf8(output.stdout).unwrap_or_else(|_| "Error converting output to string".to_string()),
-        Err(_) => "Error executing command".to_string(),
+        Err(e) => e.to_string(),
     }
 }
 
 #[tauri::command]
 async fn break_pomodoro() -> String {
-    let output = tokio::process::Command::new("pomodoro-cli")
+    let output = tokio::process::Command::new("pomodoro")
         .arg("break")
         .output()
         .await;
 
     match output {
         Ok(output) => String::from_utf8(output.stdout).unwrap_or_else(|_| "Error converting output to string".to_string()),
-        Err(_) => "Error executing command".to_string(),
+        Err(e) => e.to_string(),
     }
 }
 

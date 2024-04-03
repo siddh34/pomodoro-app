@@ -1,8 +1,42 @@
 import Chart from "../components/charts";
 import { useNavigate } from "react-router-dom";
+import { invoke } from "@tauri-apps/api/tauri";
 
 function home_page() {
     const navigate = useNavigate();
+
+    const start_pomodoro = () => {
+        invoke("start_pomodoro")
+            .then((response) => {
+                if(typeof response === "string" && response.includes(":")){
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
+
+    const stop_pomodoro = () => {
+        invoke("stop_pomodoro")
+            .then((response) => {
+                if(typeof response === "string" && response === ""){
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+    const break_pomodoro = () => {
+        invoke("break_pomodoro")
+            .then((response) => {
+                if(typeof response === "string" && response.includes(":")){
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
 
     return (
         <div className="flex flex-col min-h-screen">
@@ -20,6 +54,7 @@ function home_page() {
                             <button
                                 type="button"
                                 className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+                                onClick={start_pomodoro}
                             >
                                 Start
                             </button>
@@ -40,8 +75,11 @@ function home_page() {
                                 Break
                             </button>
                         </div>
-                    </div >
-                    <button onClick={() => navigate('/history')} className="px-4 py-2 font-bold text-white bg-emerald-500 rounded-xl">
+                    </div>
+                    <button
+                        onClick={() => navigate("/history")}
+                        className="px-4 py-2 font-bold text-white bg-emerald-500 rounded-xl"
+                    >
                         View History
                     </button>
                 </div>
