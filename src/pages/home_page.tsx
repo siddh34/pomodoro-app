@@ -1,14 +1,47 @@
 import Chart from "../components/charts";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
+import { useEffect, useState } from "react";
 
 function home_page() {
     const navigate = useNavigate();
+    const [time, setTime] = useState(5);
+    const [remainingTime, setRemainingTime] = useState(2);
+    const [lastExecuted, setLastExecuted] = useState("");
+
+    useEffect(() => {
+        if (lastExecuted !== "" && lastExecuted === "break_pomodoro") {
+            const interval = setInterval(() => {
+                invoke("update_graph")
+                    .then((response) => {
+                        if (response !== null) {
+                        }
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
+            }, 1000);
+            return () => clearInterval(interval);
+        }
+
+        if (lastExecuted === "break_pomodoro") {
+            // reduce the time by 1 second
+            const interval = setInterval(() => {
+                setRemainingTime((prev) => prev - 1);
+            }, 1000);
+
+            // if the time is 0, clear the interval
+            if (remainingTime === 0) {
+                clearInterval(interval);
+            }
+        }
+    }, [time, lastExecuted]);
 
     const start_pomodoro = () => {
-        invoke("start_pomodoro")
+        invoke("start_pomodoro", {time: 25})
             .then((response) => {
                 if(typeof response === "string" && response.includes(":")){
+                    setLastExecuted("start_pomodoro");
                 }
             })
             .catch((error) => {
@@ -18,9 +51,8 @@ function home_page() {
 
     const stop_pomodoro = () => {
         invoke("stop_pomodoro")
-            .then((response) => {
-                if(typeof response === "string" && response === ""){
-                }
+            .then(() => {
+                setLastExecuted("stop_pomodoro");
             })
             .catch((error) => {
                 console.log(error);
@@ -28,10 +60,10 @@ function home_page() {
     }
 
     const break_pomodoro = () => {
-        invoke("break_pomodoro")
+        invoke("break_pomodoro", {time: 5})
             .then((response) => {
-                console.log(response);
-                if(typeof response === "string" && response.includes(":")){
+                if(response === "5"){
+                    setLastExecuted("break_pomodoro");
                 }
             })
             .catch((error) => {
@@ -48,7 +80,10 @@ function home_page() {
 
                 <div className="flex items-center justify-center m-10">
                     <div className="flex">
-                        <Chart />
+                        <Chart
+                            timeSetter={time}
+                            remainingTimeSetter={remainingTime}
+                        />
                     </div>
                     <div className="flex flex-col items-center justify-center m-10">
                         <div className="flex">

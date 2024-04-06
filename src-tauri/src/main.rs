@@ -5,7 +5,7 @@
 #[tauri::command]
 async fn start_pomodoro() -> String {
     let output = tokio::process::Command::new("pomodoro")
-        .arg("start")
+        .arg(["start", "25"].join(" "))
         .output()
         .await;
 
@@ -29,9 +29,22 @@ async fn stop_pomodoro() -> String {
 }
 
 #[tauri::command]
-async fn break_pomodoro() -> String {
+async fn break_pomodoro(given_time: String) -> String {
     let output = tokio::process::Command::new("pomodoro")
-        .arg("break")
+        .arg(["break", &given_time].join(" "))  
+        .output()
+        .await;
+
+    match output {
+        Ok(_) => given_time,
+        Err(e) => e.to_string(),
+    }
+}
+
+#[tauri::command]
+async fn update_graph() -> String {
+    let output = tokio::process::Command::new("pomodoro")
+        .arg("status")
         .output()
         .await;
 
@@ -43,7 +56,7 @@ async fn break_pomodoro() -> String {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro])
+        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph])
         .run(tauri::generate_context!())
         .expect("Error executing command");
 }
