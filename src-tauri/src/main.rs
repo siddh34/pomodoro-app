@@ -3,9 +3,11 @@
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
-async fn start_pomodoro() -> String {
+async fn start_pomodoro(time_given: String) -> String {
     let output = tokio::process::Command::new("pomodoro")
-        .arg(["start", "25"].join(" "))
+        .arg("start")
+        .arg("duration")
+        .arg(&time_given)
         .output()
         .await;
 

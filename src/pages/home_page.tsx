@@ -38,9 +38,10 @@ function home_page() {
     }, [time, lastExecuted]);
 
     const start_pomodoro = () => {
-        invoke("start_pomodoro", {time: 25})
+        invoke("start_pomodoro", { timeGiven: `25` })
             .then((response) => {
-                if(typeof response === "string" && response.includes(":")){
+                console.log(response);
+                if (typeof response === "string" && response.includes(":")) {
                     setLastExecuted("start_pomodoro");
                 }
             })
@@ -51,7 +52,8 @@ function home_page() {
 
     const stop_pomodoro = () => {
         invoke("stop_pomodoro")
-            .then(() => {
+            .then((_) => {
+                console.log("Pomodoro Stopped");
                 setLastExecuted("stop_pomodoro");
             })
             .catch((error) => {
