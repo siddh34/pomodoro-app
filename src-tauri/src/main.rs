@@ -6,7 +6,7 @@
 async fn start_pomodoro(time_given: String) -> String {
     let output = tokio::process::Command::new("pomodoro")
         .arg("start")
-        .arg("duration")
+        .arg("--duration")
         .arg(&time_given)
         .output()
         .await;

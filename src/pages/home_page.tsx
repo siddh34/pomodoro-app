@@ -5,16 +5,31 @@ import { useEffect, useState } from "react";
 
 function home_page() {
     const navigate = useNavigate();
-    const [time, setTime] = useState(5);
-    const [remainingTime, setRemainingTime] = useState(2);
+    const [constTime, setConstTime] = useState(300);
+    const [time, setTime] = useState(300);
+    const [remainingTime, setRemainingTime] = useState(120);
     const [lastExecuted, setLastExecuted] = useState("");
 
     useEffect(() => {
-        if (lastExecuted !== "" && lastExecuted === "break_pomodoro") {
+        console.log("useEffect");
+        if (
+            lastExecuted !== "" &&
+            lastExecuted !== "break_pomodoro" &&
+            lastExecuted !== "stop_pomodoro"
+        ) {
             const interval = setInterval(() => {
                 invoke("update_graph")
                     .then((response) => {
-                        if (response !== null) {
+                        if (
+                            typeof response === "string" &&
+                            response.length > 0
+                        ) {
+                            let time1 = response.slice(0, 5);
+                            let subTime = time1.split(":");
+                            setRemainingTime(
+                                parseInt(subTime[0]) * 60 + parseInt(subTime[1])
+                            );
+                            setTime(constTime - remainingTime);
                         }
                     })
                     .catch((error) => {
@@ -25,25 +40,22 @@ function home_page() {
         }
 
         if (lastExecuted === "break_pomodoro") {
-            // reduce the time by 1 second
             const interval = setInterval(() => {
                 setRemainingTime((prev) => prev - 1);
             }, 1000);
-
-            // if the time is 0, clear the interval
             if (remainingTime === 0) {
                 clearInterval(interval);
             }
         }
-    }, [time, lastExecuted]);
+    }, [time, lastExecuted, remainingTime]);
 
     const start_pomodoro = () => {
-        invoke("start_pomodoro", { timeGiven: `25` })
-            .then((response) => {
-                console.log(response);
-                if (typeof response === "string" && response.includes(":")) {
-                    setLastExecuted("start_pomodoro");
-                }
+        invoke("start_pomodoro", { timeGiven: `30` })
+            .then((_) => {
+                setConstTime(30 * 60);
+                setTime(0);
+                setRemainingTime(0);
+                setLastExecuted("start_pomodoro");
             })
             .catch((error) => {
                 console.log(error);
@@ -53,31 +65,36 @@ function home_page() {
     const stop_pomodoro = () => {
         invoke("stop_pomodoro")
             .then((_) => {
-                console.log("Pomodoro Stopped");
+                setConstTime(5 * 60);
+                setTime(0.1);
+                setRemainingTime(0);
                 setLastExecuted("stop_pomodoro");
             })
             .catch((error) => {
                 console.log(error);
             });
-    }
+    };
 
     const break_pomodoro = () => {
-        invoke("break_pomodoro", {time: 5})
-            .then((response) => {
-                if(response === "5"){
-                    setLastExecuted("break_pomodoro");
-                }
+        invoke("break_pomodoro", { givenTime: "5" })
+            .then((_) => {
+                setLastExecuted("break_pomodoro");
+                setConstTime(5 * 60);
+                setTime(0);
+                setRemainingTime(0);
             })
             .catch((error) => {
                 console.log(error);
             });
-    }
+    };
 
     return (
-        <div className="flex flex-col min-h-screen">
+        <div className="flex flex-col min-h-screen bg-slate-300">
             <div className="flex-grow">
-                <div className="flex items-center justify-center bg-pink-400 m-15 h-25">
-                    <h1 className="text-3xl font-bold">The Pomodoro App</h1>
+                <div className="flex items-center justify-center dark:bg-gray-800 m-15 h-25">
+                    <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-yellow-500">
+                        Pomodoro App
+                    </h1>
                 </div>
 
                 <div className="flex items-center justify-center m-10">
