@@ -1,23 +1,40 @@
 import { Doughnut } from "react-chartjs-2";
 import { Chart, ArcElement } from "chart.js";
+import { useEffect, useState } from "react";
 
 Chart.register(ArcElement);
 
-const data = {
-    datasets: [
-        {
-            data: [3, 10],
-            backgroundColor: [
-                "#99CCFF",
-                "#993300",
-            ],
-            display: true,
-            borderColor: "#D1D6DC",
-        },
-    ],
-};
+const ChartComponent = ({
+    timeSetter,
+    remainingTimeSetter,
+}: {
+    timeSetter: Number;
+    remainingTimeSetter: Number;
+}) => {
+    const [data, setData] = useState({
+        datasets: [
+            {
+                data: [timeSetter, remainingTimeSetter],
+                backgroundColor: ["#99CCFF", "#993300"],
+                display: true,
+                borderColor: "#D1D6DC",
+            },
+        ],
+    });
 
-const chart = () => {
+    useEffect(() => {
+        setData({
+            datasets: [
+                {
+                    data: [timeSetter, remainingTimeSetter],
+                    backgroundColor: ["#99CCFF", "#993300"],
+                    display: true,
+                    borderColor: "#D1D6DC",
+                },
+            ],
+        });
+    }, [timeSetter, remainingTimeSetter]);
+
     return (
         <div className="flex flex-col items-center justify-center">
             <Doughnut
@@ -49,4 +66,4 @@ const chart = () => {
     );
 };
 
-export default chart;
+export default ChartComponent;
