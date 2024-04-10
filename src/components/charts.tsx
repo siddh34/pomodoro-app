@@ -16,7 +16,6 @@ const ChartComponent = ({
         datasets: [
             {
                 data: [timeSetter, remainingTimeSetter],
-                // label: "Time Doughnut Chart",
                 backgroundColor: ["#99CCFF", "#993300"],
                 borderColor: "#D1D6DC",
             },
@@ -30,7 +29,6 @@ const ChartComponent = ({
             datasets: [
                 {
                     data: [timeSetter, remainingTimeSetter],
-                    // label: "Time Doughnut Chart",
                     backgroundColor: ["#99CCFF", "#993300"],
                     borderColor: "#D1D6DC",
                 },
@@ -57,6 +55,7 @@ const ChartComponent = ({
                     cutout: "60%",
                     maintainAspectRatio: true,
                     responsive: true,
+                    
                 }}
             />
             <div className="items-center justify-center">

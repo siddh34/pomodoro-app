@@ -96,7 +96,6 @@ function home_page() {
                         Pomodoro App
                     </h1>
                 </div>
-
                 <div className="flex items-center justify-center m-10">
                     <div className="flex">
                         <Chart
