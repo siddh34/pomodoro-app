@@ -8,30 +8,34 @@ const ChartComponent = ({
     timeSetter,
     remainingTimeSetter,
 }: {
-    timeSetter: Number;
-    remainingTimeSetter: Number;
+    timeSetter: number;
+    remainingTimeSetter: number;
 }) => {
     const [data, setData] = useState({
+        labels: ["Time", "Remaining Time"],
         datasets: [
             {
                 data: [timeSetter, remainingTimeSetter],
+                // label: "Time Doughnut Chart",
                 backgroundColor: ["#99CCFF", "#993300"],
-                display: true,
                 borderColor: "#D1D6DC",
             },
         ],
+        hoverOffset: 4,
     });
 
     useEffect(() => {
         setData({
+            labels: ["Time", "Remaining Time"],
             datasets: [
                 {
                     data: [timeSetter, remainingTimeSetter],
+                    // label: "Time Doughnut Chart",
                     backgroundColor: ["#99CCFF", "#993300"],
-                    display: true,
                     borderColor: "#D1D6DC",
                 },
             ],
+            hoverOffset: 4,
         });
     }, [timeSetter, remainingTimeSetter]);
 
@@ -42,10 +46,10 @@ const ChartComponent = ({
                 options={{
                     plugins: {
                         legend: {
-                            display: false,
+                            display: true,
                         },
                         tooltip: {
-                            enabled: false,
+                            enabled: true,
                         },
                     },
                     rotation: -90,
@@ -56,11 +60,9 @@ const ChartComponent = ({
                 }}
             />
             <div className="items-center justify-center">
-                 <div className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
-  Time Left (show time)
-</div> 
-  
-
+                <div className="px-4 py-2 font-bold text-white bg-blue-500 border-b-4 border-blue-700 rounded hover:bg-blue-400 hover:border-blue-500">
+                    Time Left: {remainingTimeSetter.toString()} seconds
+                </div>
             </div>
         </div>
     );
