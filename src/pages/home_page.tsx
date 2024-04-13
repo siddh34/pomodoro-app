@@ -124,11 +124,13 @@ useEffect(() => {
                         <h1>Chose Time From right Tiles</h1>
                     </div>
                     <div className="flex flex-col items-center justify-evenly">
+                        <TimerToggler time={2} setTimer={setRemainingTimer} />
                         <TimerToggler time={10} setTimer={setRemainingTimer} />
                         <TimerToggler time={30} setTimer={setRemainingTimer} />
                         <TimerToggler time={50} setTimer={setRemainingTimer} />
                     </div>
                     <div className="flex flex-col items-center justify-evenly">
+                        <TimerToggler time={5} setTimer={setRemainingTimer} />
                         <TimerToggler time={20} setTimer={setRemainingTimer} />
                         <TimerToggler time={40} setTimer={setRemainingTimer} />
                         <TimerToggler time={60} setTimer={setRemainingTimer} />
