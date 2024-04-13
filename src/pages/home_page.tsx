@@ -1,4 +1,5 @@
 import Chart from "../components/charts";
+import TimerToggler from "../components/time_toggler";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
@@ -6,55 +7,65 @@ import { useEffect, useState } from "react";
 function home_page() {
     const navigate = useNavigate();
     const [constTime, setConstTime] = useState(300);
-    const [time, setTime] = useState(300);
+    const [time, setTime] = useState(0);
     const [remainingTime, setRemainingTime] = useState(120);
     const [lastExecuted, setLastExecuted] = useState("");
 
-    useEffect(() => {
-        console.log("useEffect");
-        if (
-            lastExecuted !== "" &&
-            lastExecuted !== "break_pomodoro" &&
-            lastExecuted !== "stop_pomodoro"
-        ) {
-            const interval = setInterval(() => {
-                invoke("update_graph")
-                    .then((response) => {
-                        if (
-                            typeof response === "string" &&
-                            response.length > 0
-                        ) {
-                            let time1 = response.slice(0, 5);
-                            let subTime = time1.split(":");
-                            setRemainingTime(
-                                parseInt(subTime[0]) * 60 + parseInt(subTime[1])
-                            );
-                            setTime(constTime - remainingTime);
-                        }
-                    })
-                    .catch((error) => {
-                        console.log(error);
-                    });
-            }, 1000);
-            return () => clearInterval(interval);
-        }
+useEffect(() => {
+    let interval: NodeJS.Timeout;
 
-        if (lastExecuted === "break_pomodoro") {
-            const interval = setInterval(() => {
-                setRemainingTime((prev) => prev - 1);
-            }, 1000);
-            if (remainingTime === 0) {
-                clearInterval(interval);
-            }
+    if (lastExecuted === "break_pomodoro") {
+        interval = setInterval(() => {
+            console.log(remainingTime);
+            setRemainingTime((prev) => {
+                if (prev <= 1) {
+                    setTime(0.1);
+                    clearInterval(interval);
+                    return 0;
+                } else {
+                    setTime(constTime - prev + 1);
+                    return prev - 1;
+                }
+            });
+        }, 1000);
+    } else if (lastExecuted === "stop_pomodoro") {
+        if (remainingTime === 0) {
+            setRemainingTime(0);
         }
-    }, [time, lastExecuted, remainingTime]);
+        setTime(0.1);
+    } else if (lastExecuted !== "") {
+        interval = setInterval(() => {
+            invoke("update_graph")
+                .then((response) => {
+                    if (typeof response === "string" && response.length > 0) {
+                        const [hours, minutes] = response
+                            .slice(0, 5)
+                            .split(":");
+                        console.log(hours, minutes)
+                        setRemainingTime(
+                            parseInt(hours) * 60 + parseInt(minutes)
+                        );
+                        setTime(constTime - remainingTime);
+                        console.log(time)
+                    }
+                })
+                .catch(console.error);
+        }, 1000);
+    }
+
+    return () => {
+        if (interval) {
+            clearInterval(interval);
+        }
+    };
+}, [lastExecuted, constTime, remainingTime]);
 
     const start_pomodoro = () => {
-        invoke("start_pomodoro", { timeGiven: `30` })
+        invoke("start_pomodoro", { timeGiven: `${remainingTime.toString()}` })
             .then((_) => {
-                setConstTime(30 * 60);
+                setConstTime(remainingTime);
                 setTime(0);
-                setRemainingTime(0);
+                setRemainingTime(remainingTime);
                 setLastExecuted("start_pomodoro");
             })
             .catch((error) => {
@@ -81,12 +92,16 @@ function home_page() {
                 setLastExecuted("break_pomodoro");
                 setConstTime(5 * 60);
                 setTime(0);
-                setRemainingTime(0);
+                setRemainingTime(5 * 60);
             })
             .catch((error) => {
                 console.log(error);
             });
     };
+
+    const setRemainingTimer = (time: number) => {
+        setRemainingTime(time);
+    }
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-300">
@@ -97,6 +112,20 @@ function home_page() {
                     </h1>
                 </div>
                 <div className="flex items-center justify-center m-10">
+                    <div className="flex flex-row">
+                        <h1>Chose Time From right Tiles</h1>
+                    </div>
+                    <div className="flex flex-col items-center justify-evenly">
+                        <TimerToggler time={10} setTimer={setRemainingTimer} />
+                        <TimerToggler time={30} setTimer={setRemainingTimer} />
+                        <TimerToggler time={50} setTimer={setRemainingTimer} />
+                    </div>
+                    <div className="flex flex-col items-center justify-evenly">
+                        <TimerToggler time={20} setTimer={setRemainingTimer} />
+                        <TimerToggler time={40} setTimer={setRemainingTimer} />
+                        <TimerToggler time={60} setTimer={setRemainingTimer} />
+                    </div>
+
                     <div className="flex">
                         <Chart
                             timeSetter={time}
