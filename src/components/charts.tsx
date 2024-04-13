@@ -1,8 +1,8 @@
 import { Doughnut } from "react-chartjs-2";
-import { Chart, ArcElement } from "chart.js";
+import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import { useEffect, useState } from "react";
 
-Chart.register(ArcElement);
+Chart.register(ArcElement, Tooltip, Legend);
 
 const ChartComponent = ({
     timeSetter,
@@ -12,28 +12,28 @@ const ChartComponent = ({
     remainingTimeSetter: number;
 }) => {
     const [data, setData] = useState({
-        labels: ["Time", "Remaining Time"],
+        labels: ["Default Time Completed", "Default Remaining Time"],
         datasets: [
             {
+                label: "Seconds",
                 data: [timeSetter, remainingTimeSetter],
                 backgroundColor: ["#99CCFF", "#993300"],
                 borderColor: "#D1D6DC",
             },
         ],
-        hoverOffset: 4,
     });
 
     useEffect(() => {
         setData({
-            labels: ["Time", "Remaining Time"],
+            labels: ["Time Completed", "Remaining Time"],
             datasets: [
                 {
+                    label: "Seconds",
                     data: [timeSetter, remainingTimeSetter],
                     backgroundColor: ["#99CCFF", "#993300"],
                     borderColor: "#D1D6DC",
                 },
             ],
-            hoverOffset: 4,
         });
     }, [timeSetter, remainingTimeSetter]);
 
@@ -50,15 +50,11 @@ const ChartComponent = ({
                             enabled: true,
                         },
                     },
-                    rotation: -90,
-                    circumference: 180,
-                    cutout: "60%",
                     maintainAspectRatio: true,
                     responsive: true,
-                    
                 }}
             />
-            <div className="items-center justify-center">
+            <div className="items-center justify-center py-3">
                 <div className="px-4 py-2 font-bold text-white bg-blue-500 border-b-4 border-blue-700 rounded hover:bg-blue-400 hover:border-blue-500">
                     Time Left: {remainingTimeSetter.toString()} seconds
                 </div>
