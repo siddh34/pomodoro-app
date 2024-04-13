@@ -8,11 +8,15 @@ function home_page() {
     const navigate = useNavigate();
     const [constTime, setConstTime] = useState(300);
     const [time, setTime] = useState(0);
-    const [remainingTime, setRemainingTime] = useState(120);
+    const [remainingTime, setRemainingTime] = useState(60);
     const [lastExecuted, setLastExecuted] = useState("");
 
 useEffect(() => {
     let interval: NodeJS.Timeout;
+
+    if(remainingTime === 0){
+        return;
+    }
 
     if (lastExecuted === "break_pomodoro") {
         interval = setInterval(() => {
@@ -32,18 +36,22 @@ useEffect(() => {
         if (remainingTime === 0) {
             setRemainingTime(0);
         }
-        setTime(0.1);
+        setTime(0.0);
     } else if (lastExecuted !== "") {
         interval = setInterval(() => {
             invoke("update_graph")
                 .then((response) => {
                     if (typeof response === "string" && response.length > 0) {
-                        const [hours, minutes] = response
-                            .slice(0, 5)
-                            .split(":");
-                        console.log(hours, minutes)
+                        const [minutes, seconds] = response.split(":", 2);
+
+                        if (minutes === "0" && seconds === "00") {
+                            setRemainingTimer(0);
+                            setLastExecuted("stop_pomodoro");
+                            return;
+                        }
+                        
                         setRemainingTime(
-                            parseInt(hours) * 60 + parseInt(minutes)
+                            parseInt(minutes) * 60 + parseInt(seconds)
                         );
                         setTime(constTime - remainingTime);
                         console.log(time)
@@ -61,7 +69,7 @@ useEffect(() => {
 }, [lastExecuted, constTime, remainingTime]);
 
     const start_pomodoro = () => {
-        invoke("start_pomodoro", { timeGiven: `${remainingTime.toString()}` })
+        invoke("start_pomodoro", { timeGiven: `${(remainingTime / 60).toString()}` })
             .then((_) => {
                 setConstTime(remainingTime);
                 setTime(0);
