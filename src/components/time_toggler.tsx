@@ -1,21 +1,24 @@
-import { useState } from "react"
+import { useState, useEffect } from "react";
 
-function time_toggler({time, setTimer}: {time: Number, setTimer: any}) {
-  const [nodeTime, setNodeTime] = useState("");
-  
-  setNodeTime(String(time))
+function TimeToggler({ time, setTimer }: { time: number; setTimer: any }) {
+    const [nodeTime, setNodeTime] = useState("");
 
-  return (
-    <div>
-       <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" onClick={
-        () => {
-            setTimer(time)
-        }
-       }>
-        `${nodeTime} mins`
-      </button> 
-    </div>
-  )
+    useEffect(() => {
+        setNodeTime(String(time));
+    }, [time]);
+
+    return (
+        <div>
+            <button
+                className="px-4 py-1 m-2 font-bold text-white bg-blue-500 rounded hover:bg-blue-700"
+                onClick={() => {
+                    setTimer(time);
+                }}
+            >
+                {`${nodeTime} mins`}
+            </button>
+        </div>
+    );
 }
 
-export default time_toggler
+export default TimeToggler;

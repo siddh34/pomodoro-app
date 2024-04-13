@@ -1,22 +1,23 @@
 import { Doughnut } from "react-chartjs-2";
-import { Chart, ArcElement } from "chart.js";
+import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import { useEffect, useState } from "react";
 
-Chart.register(ArcElement);
+Chart.register(ArcElement, Tooltip, Legend);
 
 const ChartComponent = ({
     timeSetter,
     remainingTimeSetter,
 }: {
-    timeSetter: Number;
-    remainingTimeSetter: Number;
+    timeSetter: number;
+    remainingTimeSetter: number;
 }) => {
     const [data, setData] = useState({
+        labels: ["Default Time Completed", "Default Remaining Time"],
         datasets: [
             {
+                label: "Seconds",
                 data: [timeSetter, remainingTimeSetter],
                 backgroundColor: ["#99CCFF", "#993300"],
-                display: true,
                 borderColor: "#D1D6DC",
             },
         ],
@@ -24,11 +25,12 @@ const ChartComponent = ({
 
     useEffect(() => {
         setData({
+            labels: ["Time Completed", "Remaining Time"],
             datasets: [
                 {
+                    label: "Seconds",
                     data: [timeSetter, remainingTimeSetter],
                     backgroundColor: ["#99CCFF", "#993300"],
-                    display: true,
                     borderColor: "#D1D6DC",
                 },
             ],
@@ -42,25 +44,20 @@ const ChartComponent = ({
                 options={{
                     plugins: {
                         legend: {
-                            display: false,
+                            display: true,
                         },
                         tooltip: {
-                            enabled: false,
+                            enabled: true,
                         },
                     },
-                    rotation: -90,
-                    circumference: 180,
-                    cutout: "60%",
                     maintainAspectRatio: true,
                     responsive: true,
                 }}
             />
-            <div className="items-center justify-center">
-                 <div className="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 hover:border-blue-500 rounded">
-  Time Left (show time)
-</div> 
-  
-
+            <div className="items-center justify-center py-3">
+                <div className="px-4 py-2 font-bold text-white bg-blue-500 border-b-4 border-blue-700 rounded hover:bg-blue-400 hover:border-blue-500">
+                    Time Left: {(remainingTimeSetter).toString()} seconds
+                </div>
             </div>
         </div>
     );
