@@ -11,62 +11,62 @@ function home_page() {
     const [remainingTime, setRemainingTime] = useState(60);
     const [lastExecuted, setLastExecuted] = useState("");
 
-useEffect(() => {
-    let interval: NodeJS.Timeout;
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
 
-    if(remainingTime === 0){
-        return;
-    }
-
-    if (lastExecuted === "break_pomodoro") {
-        interval = setInterval(() => {
-            console.log(remainingTime);
-            setRemainingTime((prev) => {
-                if (prev <= 1) {
-                    setTime(0.1);
-                    clearInterval(interval);
-                    return 0;
-                } else {
-                    setTime(constTime - prev + 1);
-                    return prev - 1;
-                }
-            });
-        }, 1000);
-    } else if (lastExecuted === "stop_pomodoro") {
         if (remainingTime === 0) {
-            setRemainingTime(0);
+            return;
         }
-        setTime(0.0);
-    } else if (lastExecuted !== "") {
-        interval = setInterval(() => {
-            invoke("update_graph")
-                .then((response) => {
-                    if (typeof response === "string" && response.length > 0) {
-                        const [minutes, seconds] = response.split(":", 2);
 
-                        if (minutes === "0" && seconds === "00") {
-                            setRemainingTimer(0);
-                            setLastExecuted("stop_pomodoro");
-                            return;
-                        }
-                        
-                        setRemainingTime(
-                            parseInt(minutes) * 60 + parseInt(seconds)
-                        );
-                        setTime(constTime - remainingTime);
-                        console.log(time)
+        if (lastExecuted === "break_pomodoro") {
+            interval = setInterval(() => {
+                console.log(remainingTime);
+                setRemainingTime((prev) => {
+                    if (prev <= 1) {
+                        setTime(0.1);
+                        clearInterval(interval);
+                        return 0;
+                    } else {
+                        setTime(constTime - prev + 1);
+                        return prev - 1;
                     }
-                })
-                .catch(console.error);
-        }, 1000);
-    }
+                });
+            }, 1000);
+        } else if (lastExecuted === "stop_pomodoro") {
+            if (remainingTime === 0) {
+                setRemainingTime(0);
+            }
+            setTime(0.0);
+        } else if (lastExecuted !== "") {
+            interval = setInterval(() => {
+                invoke("update_graph")
+                    .then((response) => {
+                        if (typeof response === "string" && response.length > 0) {
+                            const [minutes, seconds] = response.split(":", 2);
 
-    return () => {
-        if (interval) {
-            clearInterval(interval);
+                            if (minutes === "0" && seconds === "00") {
+                                setRemainingTimer(0);
+                                setLastExecuted("stop_pomodoro");
+                                return;
+                            }
+
+                            setRemainingTime(
+                                parseInt(minutes) * 60 + parseInt(seconds)
+                            );
+                            setTime(constTime - remainingTime);
+                            console.log(time)
+                        }
+                    })
+                    .catch(console.error);
+            }, 1000);
         }
-    };
-}, [lastExecuted, constTime, remainingTime]);
+
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [lastExecuted, constTime, remainingTime]);
 
     const start_pomodoro = () => {
         invoke("start_pomodoro", { timeGiven: `${(remainingTime / 60).toString()}` })
@@ -120,22 +120,31 @@ useEffect(() => {
                     </h1>
                 </div>
                 <div className="flex items-center justify-center m-10">
-                    <div className="flex flex-row">
-                        <h1>Chose Time From right Tiles</h1>
-                    </div>
-                    <div className="flex flex-col items-center justify-evenly">
-                        <TimerToggler time={2} setTimer={setRemainingTimer} />
-                        <TimerToggler time={10} setTimer={setRemainingTimer} />
-                        <TimerToggler time={30} setTimer={setRemainingTimer} />
-                        <TimerToggler time={50} setTimer={setRemainingTimer} />
-                    </div>
-                    <div className="flex flex-col items-center justify-evenly">
-                        <TimerToggler time={5} setTimer={setRemainingTimer} />
-                        <TimerToggler time={20} setTimer={setRemainingTimer} />
-                        <TimerToggler time={40} setTimer={setRemainingTimer} />
-                        <TimerToggler time={60} setTimer={setRemainingTimer} />
-                    </div>
+                    <div className="flex items-center justify-center">
 
+                        <div className="flex flex-col items-center justify-evenly">
+                            <div className="">
+                                <h1>Odd Time</h1>
+                            </div>
+                            {/* This row contains timer toggler components for 2, 10, 30, and 50 seconds */}
+                            <TimerToggler time={3} setTimer={setRemainingTimer} />
+                            <TimerToggler time={5} setTimer={setRemainingTimer} />
+                            <TimerToggler time={15} setTimer={setRemainingTimer} />
+                            <TimerToggler time={45} setTimer={setRemainingTimer} />
+                        </div>
+                        <div className="flex flex-col items-center justify-evenly">
+                            <div className="">
+                                <h1>Even TIme</h1>
+                            </div>
+                            {/* This row contains timer toggler components for 5, 20, 40, and 60 seconds */}
+                            <TimerToggler time={2} setTimer={setRemainingTimer} />
+                            <TimerToggler time={20} setTimer={setRemainingTimer} />
+                            <TimerToggler time={40} setTimer={setRemainingTimer} />
+                            <TimerToggler time={60} setTimer={setRemainingTimer} />
+                        </div>
+
+
+                    </div>
                     <div className="flex">
                         <Chart
                             timeSetter={time}
