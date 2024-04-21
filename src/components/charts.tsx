@@ -56,7 +56,7 @@ const ChartComponent = ({
             />
             <div className="items-center justify-center py-3">
                 <div className="px-4 py-2 font-bold text-white bg-blue-500 border-b-4 border-blue-700 rounded hover:bg-blue-400 hover:border-blue-500">
-                    Time Left: {(remainingTimeSetter).toString()} seconds
+                    Time Left: {remainingTimeSetter.toString()} seconds
                 </div>
             </div>
         </div>
