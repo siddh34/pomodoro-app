@@ -17,7 +17,7 @@ const ChartComponent = ({
             {
                 label: "Seconds",
                 data: [timeSetter, remainingTimeSetter],
-                backgroundColor: ["#99CCFF", "#993300"],
+                backgroundColor: ["#99CCFF", "#C8A2C8"],
                 borderColor: "#D1D6DC",
             },
         ],
@@ -30,7 +30,7 @@ const ChartComponent = ({
                 {
                     label: "Seconds",
                     data: [timeSetter, remainingTimeSetter],
-                    backgroundColor: ["#99CCFF", "#993300"],
+                    backgroundColor: ["#99CCFF", "#C8A2C8"],
                     borderColor: "#D1D6DC",
                 },
             ],
