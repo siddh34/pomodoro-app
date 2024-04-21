@@ -24,9 +24,9 @@ const NumberInput: React.FC<NumberInputProps> = ({
             value={value}
             onChange={(e) => {
                 if (e.target.value === "0") {
-                    onChange(1);
+                    onChange(1 * 60);
                 } else {
-                    onChange(Number(e.target.value));
+                    onChange(Number(e.target.value) * 60);
                 }
             }}
             aria-describedby="helper-text-explanation"
