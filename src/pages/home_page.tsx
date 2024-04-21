@@ -182,7 +182,7 @@ useEffect(() => {
                     </div>
                 </div>
             <div className="flex flex-col p-5 m-5">
-                <NumberInput value={remainingTime} label="Set Time for a Pomodoro" onChange={setRemainingTimer} />
+                <NumberInput value={remainingTime} label="Set Time for a Pomodoro in seconds" onChange={setRemainingTimer} />
                 </div>
             </div>
             <footer className="bg-white shadow dark:bg-gray-800">
