@@ -1,3 +1,5 @@
+import { on } from "events";
+
 interface NumberInputProps {
     value: number;
     onChange: (value: number) => void;
@@ -20,7 +22,13 @@ const NumberInput: React.FC<NumberInputProps> = ({
             type="number"
             id="number-input"
             value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
+            onChange={(e) => {
+                if (e.target.value === "0") {
+                    onChange(1);
+                } else {
+                    onChange(Number(e.target.value));
+                }
+            }}
             aria-describedby="helper-text-explanation"
             className="bg-gray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             placeholder="Enter Pomodoro duration in minutes"
