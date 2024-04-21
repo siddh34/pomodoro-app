@@ -3,6 +3,7 @@ import TimerToggler from "../components/time_toggler";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
+import NumberInput from "../components/customTimeInput";
 
 function home_page() {
     const navigate = useNavigate();
@@ -10,6 +11,7 @@ function home_page() {
     const [time, setTime] = useState(0);
     const [remainingTime, setRemainingTime] = useState(60);
     const [lastExecuted, setLastExecuted] = useState("");
+    const [isTimerStarted, setIsTimerStarted] = useState(false);
 
 useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -25,6 +27,7 @@ useEffect(() => {
                 if (prev <= 1) {
                     setTime(0.1);
                     clearInterval(interval);
+                    setIsTimerStarted(false);
                     return 0;
                 } else {
                     setTime(constTime - prev + 1);
@@ -44,9 +47,10 @@ useEffect(() => {
                     if (typeof response === "string" && response.length > 0) {
                         const [minutes, seconds] = response.split(":", 2);
 
-                        if (minutes === "0" && seconds === "00") {
+                        if ((minutes === "0" && seconds === "00") || time < 0 || Number.isNaN(time)) {
                             setRemainingTimer(0);
                             setLastExecuted("stop_pomodoro");
+                            setIsTimerStarted(false);
                             return;
                         }
                         
@@ -69,6 +73,7 @@ useEffect(() => {
 }, [lastExecuted, constTime, remainingTime]);
 
     const start_pomodoro = () => {
+        setIsTimerStarted(true);
         invoke("start_pomodoro", { timeGiven: `${(remainingTime / 60).toString()}` })
             .then((_) => {
                 setConstTime(remainingTime);
@@ -95,6 +100,7 @@ useEffect(() => {
     };
 
     const break_pomodoro = () => {
+        setIsTimerStarted(true);
         invoke("break_pomodoro", { givenTime: "5" })
             .then((_) => {
                 setLastExecuted("break_pomodoro");
@@ -120,20 +126,19 @@ useEffect(() => {
                     </h1>
                 </div>
                 <div className="flex items-center justify-center m-10">
-                    <div className="flex flex-row">
-                        <h1>Chose Time From right Tiles</h1>
-                    </div>
                     <div className="flex flex-col items-center justify-evenly">
+                        <h1>Even Time</h1>
                         <TimerToggler time={2} setTimer={setRemainingTimer} />
                         <TimerToggler time={10} setTimer={setRemainingTimer} />
                         <TimerToggler time={30} setTimer={setRemainingTimer} />
                         <TimerToggler time={50} setTimer={setRemainingTimer} />
                     </div>
                     <div className="flex flex-col items-center justify-evenly">
+                        <h1>Odd Time</h1>
                         <TimerToggler time={5} setTimer={setRemainingTimer} />
-                        <TimerToggler time={20} setTimer={setRemainingTimer} />
-                        <TimerToggler time={40} setTimer={setRemainingTimer} />
-                        <TimerToggler time={60} setTimer={setRemainingTimer} />
+                        <TimerToggler time={25} setTimer={setRemainingTimer} />
+                        <TimerToggler time={45} setTimer={setRemainingTimer} />
+                        <TimerToggler time={55} setTimer={setRemainingTimer} />
                     </div>
 
                     <div className="flex">
@@ -178,7 +183,16 @@ useEffect(() => {
                                 History
                             </button>
                         </div>
+                        <div className="flex flex-col"></div>
                     </div>
+                </div>
+                <div className="flex flex-col p-5 m-5">
+                    <NumberInput
+                        value={remainingTime / 60}
+                        label="Set Time for a Pomodoro in minutes"
+                        onChange={setRemainingTimer}
+                        isTimerStarted={isTimerStarted}
+                    />
                 </div>
             </div>
             <footer className="bg-white shadow dark:bg-gray-800">
