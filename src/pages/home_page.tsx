@@ -36,6 +36,7 @@ useEffect(() => {
             });
         }, 1000);
     } else if (lastExecuted === "stop_pomodoro") {
+        setIsTimerStarted(false);
         if (remainingTime === 0) {
             setRemainingTime(0);
         }
@@ -47,11 +48,14 @@ useEffect(() => {
                     if (typeof response === "string" && response.length > 0) {
                         const [minutes, seconds] = response.split(":", 2);
 
-                        if ((minutes === "0" && seconds === "00") || time < 0 || Number.isNaN(time)) {
-                            setRemainingTimer(0);
+                        if (
+                            remainingTime === 0 ||
+                            remainingTime < 0 ||
+                            Number.isNaN(remainingTime)
+                        ) {
+                            setRemainingTimer(60);
                             setLastExecuted("stop_pomodoro");
                             setIsTimerStarted(false);
-                            return;
                         }
                         
                         setRemainingTime(
@@ -70,12 +74,14 @@ useEffect(() => {
             clearInterval(interval);
         }
     };
-}, [lastExecuted, constTime, remainingTime]);
+}, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
+        // TODO: Add support for custom time
         setIsTimerStarted(true);
         invoke("start_pomodoro", { timeGiven: `${(remainingTime / 60).toString()}` })
             .then((_) => {
+                setIsTimerStarted(true)
                 setConstTime(remainingTime);
                 setTime(0);
                 setRemainingTime(remainingTime);

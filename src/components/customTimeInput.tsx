@@ -15,6 +15,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
 }) => {
     useEffect(() => {
         // Your effect logic here
+        console.log(isTimerStarted)
     }, [isTimerStarted]);
 
     return (
@@ -28,7 +29,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
             <input
                 type="number"
                 id="number-input"
-                value={!isTimerStarted ? value : undefined}
+                value={!isTimerStarted ? value : 1}
                 onChange={(e) => {
                     if (e.target.value === "0") {
                         onChange(1 * 60);
@@ -36,6 +37,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
                         onChange(Number(e.target.value) * 60);
                     }
                 }}
+                disabled={isTimerStarted}
                 aria-describedby="helper-text-explanation"
                 className="bg-gray border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 placeholder="Enter Pomodoro duration in minutes"
