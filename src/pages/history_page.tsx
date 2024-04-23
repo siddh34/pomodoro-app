@@ -3,37 +3,53 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/tauri";
 import * as _ from "lodash";
+import TimeLineComponent from "../components/timeLineComponent";
 
-// import TimeLineComponent from "../components/timeLineComponent";
+interface PomoArrSchema {
+    pomodoros: [];
+}
 
 interface Pomo {
-    pomodoros: [];
+    start_time: string;
+    description: string;
+    duration: Number;
+    tags: string[] | null;
 }
 
 function history_page() {
     const navigate = useNavigate();
-    const [pomoArr, setPomoArr] = useState<Pomo[]>([]);
+    const [pomoArr, setPomoArr] = useState<PomoArrSchema[]>([]);
 
     useEffect(() => {
-        fetchHistory()
-            .then(() => {
-                console.log(pomoArr);
+        fetchHistory();
+    }, []);
+
+    useEffect(() => {
+        console.log("pomo:::",pomoArr);
+    }, [pomoArr]);
+
+    const fetchHistory = () => {
+        invoke("get_history")
+            .then((response) => {
+                console.log(response);
+                if (
+                    _.isObject(response) &&
+                    _.isArray(
+                        (response as { pomodoros: PomoArrSchema[] }).pomodoros
+                    ) &&
+                    !_.isEmpty(
+                        (response as { pomodoros: PomoArrSchema[] }).pomodoros
+                    )
+                ) {
+                    setPomoArr(
+                        (response as { pomodoros: PomoArrSchema[] }).pomodoros
+                    );
+                    console.log(pomoArr);
+                }
             })
             .catch((err) => {
                 console.log(err);
             });
-    }, []);
-
-    const fetchHistory = async () => {
-        const response = await invoke("get_history");
-        console.log(response);
-        if (
-            _.isObject(response) &&
-            _.isArray((response as { pomodoros: Pomo[] }).pomodoros) &&
-            !_.isEmpty((response as { pomodoros: Pomo[] }).pomodoros)
-        ) {
-            setPomoArr((response as { pomodoros: Pomo[] }).pomodoros);
-        }
     };
 
     return (
@@ -51,7 +67,9 @@ function history_page() {
                         <span className="ml-4">Back</span>
                     </div>
                 </button>
-                {/* <TimeLineComponent></TimeLineComponent> */}
+                <TimeLineComponent
+                    fetchedHistory={pomoArr as unknown as Pomo[]}
+                ></TimeLineComponent>
             </div>
         </>
     );

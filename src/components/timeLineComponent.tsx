@@ -11,8 +11,9 @@ function TimeLineComponent({ fetchedHistory }: { fetchedHistory: Pomo[] }) {
     const [pomodoro, setPomodoro] = useState<Pomo[]>([]);
 
     useEffect(() => {
+        console.log(fetchedHistory);
         setPomodoro(fetchedHistory);
-    }, []);
+    }, [fetchedHistory]);
 
     return (
         <div className="flex items-center justify-center">
