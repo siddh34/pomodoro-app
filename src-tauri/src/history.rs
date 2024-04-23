@@ -2,10 +2,10 @@ use serde::{Serialize, Deserialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Pomodoro {
-    start_time: String,
-    description: String,
-    duration: u32,
-    tags: Vec<String>,
+    pub start_time: String,
+    pub description: String,
+    pub duration: u32,
+    pub tags: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
