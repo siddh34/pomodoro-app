@@ -17,7 +17,7 @@ useEffect(() => {
     let interval: NodeJS.Timeout;
 
     if (lastExecuted === "break_pomodoro") {
-        
+        setIsTimerStarted(true);
         interval = setInterval(() => {
             console.log(remainingTime);
             setRemainingTime((prev) => {
