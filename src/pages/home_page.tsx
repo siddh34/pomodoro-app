@@ -33,7 +33,7 @@ useEffect(() => {
         }, 1000);
     } else if (lastExecuted === "stop_pomodoro") {
         setIsTimerStarted(false);
-        if (remainingTime === 0) {
+        if (remainingTime <= 1) {
             setRemainingTime(60);
         }
         setTime(0.0);
