@@ -5,6 +5,7 @@ interface NumberInputProps {
     onChange: (value: number) => void;
     label: string;
     isTimerStarted: boolean;
+    constTime: number;
 }
 
 const NumberInput: React.FC<NumberInputProps> = ({
@@ -12,6 +13,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
     onChange,
     label,
     isTimerStarted,
+    constTime
 }) => {
     useEffect(() => {
         // Your effect logic here
@@ -29,7 +31,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
             <input
                 type="number"
                 id="number-input"
-                value={!isTimerStarted ? value : 1}
+                value={!isTimerStarted ? value : constTime}
                 onChange={(e) => {
                     if (e.target.value === "0") {
                         onChange(1 * 60);

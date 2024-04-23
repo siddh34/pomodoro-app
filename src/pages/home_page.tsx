@@ -16,18 +16,14 @@ function home_page() {
 useEffect(() => {
     let interval: NodeJS.Timeout;
 
-    if(remainingTime === 0){
-        return;
-    }
-
     if (lastExecuted === "break_pomodoro") {
+        
         interval = setInterval(() => {
             console.log(remainingTime);
             setRemainingTime((prev) => {
                 if (prev <= 1) {
-                    setTime(0.1);
                     clearInterval(interval);
-                    setIsTimerStarted(false);
+                    setLastExecuted("stop_pomodoro");
                     return 0;
                 } else {
                     setTime(constTime - prev + 1);
@@ -38,7 +34,7 @@ useEffect(() => {
     } else if (lastExecuted === "stop_pomodoro") {
         setIsTimerStarted(false);
         if (remainingTime === 0) {
-            setRemainingTime(0);
+            setRemainingTime(60);
         }
         setTime(0.0);
     } else if (lastExecuted !== "") {
@@ -47,22 +43,21 @@ useEffect(() => {
                 .then((response) => {
                     if (typeof response === "string" && response.length > 0) {
                         const [minutes, seconds] = response.split(":", 2);
-
+                        console.log(minutes, seconds);
                         if (
-                            remainingTime === 0 ||
-                            remainingTime < 0 ||
-                            Number.isNaN(remainingTime)
+                            Number.isNaN(remainingTime) ||
+                            minutes === undefined ||
+                            seconds === undefined ||
+                            remainingTime === 0.1
                         ) {
-                            setRemainingTimer(60);
                             setLastExecuted("stop_pomodoro");
-                            setIsTimerStarted(false);
+                        } else {
+                            setRemainingTime(
+                                parseInt(minutes) * 60 + parseInt(seconds)
+                            );
+                            setTime(constTime - remainingTime);
+                            console.log(time)
                         }
-                        
-                        setRemainingTime(
-                            parseInt(minutes) * 60 + parseInt(seconds)
-                        );
-                        setTime(constTime - remainingTime);
-                        console.log(time)
                     }
                 })
                 .catch(console.error);
@@ -198,6 +193,7 @@ useEffect(() => {
                         label="Set Time for a Pomodoro in minutes"
                         onChange={setRemainingTimer}
                         isTimerStarted={isTimerStarted}
+                        constTime={constTime /60}
                     />
                 </div>
             </div>
