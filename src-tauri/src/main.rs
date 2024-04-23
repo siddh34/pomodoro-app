@@ -1,5 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+pub mod history;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -56,9 +57,25 @@ async fn update_graph() -> String {
     }
 }
 
+#[tauri::command]
+async fn get_history() -> Result<history::History, history::MyError> {
+    let output = tokio::process::Command::new("pomodoro")
+        .arg("history --output json")
+        .output()
+        .await
+        .map_err(|e| history::MyError { message: e.to_string() })?;
+
+    let stdout = String::from_utf8(output.stdout)
+        .map_err(|_| history::MyError { message: "Error converting output to string".to_string() })?;
+    let history: history::History = serde_json::from_str(&stdout)
+        .map_err(|e| history::MyError { message: e.to_string() })?;
+
+    Ok(history)
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph])
+        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph, get_history])
         .run(tauri::generate_context!())
         .expect("Error executing command");
 }
