@@ -1,6 +1,6 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import TimeLineComponent from "../components/timeLineComponent";
+// import TimeLineComponent from "../components/timeLineComponent";
 
 function history_page() {
     const navigate = useNavigate();
@@ -19,7 +19,7 @@ function history_page() {
                         <span className="ml-4">Back</span>
                     </div>
                 </button>
-                <TimeLineComponent></TimeLineComponent>
+                {/* <TimeLineComponent></TimeLineComponent> */}
             </div>
         </>
     );

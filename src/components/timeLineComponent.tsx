@@ -1,22 +1,17 @@
 import { useState, useEffect } from "react";
 
 interface Pomo {
-    id: string;
     start_time: string;
     description: string;
+    duration: Number;
+    tags: string[] | null;
 }
 
-function TimeLineComponent() {
+function TimeLineComponent({ fetchedHistory }: { fetchedHistory: Pomo[] }) {
     const [pomodoro, setPomodoro] = useState<Pomo[]>([]);
 
     useEffect(() => {
-        setPomodoro([
-            {
-                id: "1",
-                start_time: "2015-06-14T12:34:56-04:00",
-                description: "Blog Post",
-            },
-        ]);
+        setPomodoro(fetchedHistory);
     }, []);
 
     return (
@@ -25,7 +20,7 @@ function TimeLineComponent() {
                 {pomodoro.length > 0 ? (
                     pomodoro.map((pomo) => {
                         return (
-                            <li key={pomo.id} className="mb-20 ms-10">
+                            <li className="mb-20 ms-10">
                                 <div className="absolute w-3 h-3 bg-gray-200 rounded-full mt-1.0 -start-1.5 border border-white dark:border-gray-900 dark:bg-gray-700"></div>
                                 <a
                                     href="#"
@@ -43,9 +38,26 @@ function TimeLineComponent() {
                                             pomo.start_time
                                         ).toLocaleDateString()}
                                     </p>
-                                    <p className="text-base font-normal text-gray-500 dark:text-gray-600">
-                                        {pomo.description}
-                                    </p>
+                                    {pomo.description.length > 0 ? (
+                                        <p className="text-base font-normal text-gray-500 dark:text-gray-600">
+                                            Description: {pomo.description}
+                                        </p>
+                                    ) : (
+                                        <p className="text-base font-normal text-gray-500 dark:text-gray-600">
+                                            Description: No Description
+                                        </p>
+                                    )}
+                                    {
+                                        pomo.tags !== null ? (
+                                            <p className="text-base font-normal text-gray-500 dark:text-gray-600">
+                                                Tags: {pomo.tags.join(", ")}
+                                            </p>
+                                        ) : (
+                                            <p className="text-base font-normal text-gray-500 dark:text-gray-600">
+                                                Tags: No Tags
+                                            </p>
+                                        )
+                                    }
                                 </a>
                             </li>
                         );
