@@ -5,7 +5,7 @@ pub struct Pomodoro {
     pub start_time: String,
     pub description: String,
     pub duration: u32,
-    pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

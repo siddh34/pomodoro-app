@@ -60,7 +60,9 @@ async fn update_graph() -> String {
 #[tauri::command]
 async fn get_history() -> Result<history::History, history::MyError> {
     let output = tokio::process::Command::new("pomodoro")
-        .arg("history --output json")
+        .arg("history")
+        .arg("--output")
+        .arg("json")
         .output()
         .await
         .map_err(|e| history::MyError { message: e.to_string() })?;

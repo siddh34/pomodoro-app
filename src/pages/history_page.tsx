@@ -1,9 +1,41 @@
 import { GalleryVerticalEnd } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { invoke } from "@tauri-apps/api/tauri";
+import * as _ from "lodash";
+
 // import TimeLineComponent from "../components/timeLineComponent";
+
+interface Pomo {
+    pomodoros: [];
+}
 
 function history_page() {
     const navigate = useNavigate();
+    const [pomoArr, setPomoArr] = useState<Pomo[]>([]);
+
+    useEffect(() => {
+        fetchHistory()
+            .then(() => {
+                console.log(pomoArr);
+            })
+            .catch((err) => {
+                console.log(err);
+            });
+    }, []);
+
+    const fetchHistory = async () => {
+        const response = await invoke("get_history");
+        console.log(response);
+        if (
+            _.isObject(response) &&
+            _.isArray((response as { pomodoros: Pomo[] }).pomodoros) &&
+            !_.isEmpty((response as { pomodoros: Pomo[] }).pomodoros)
+        ) {
+            setPomoArr((response as { pomodoros: Pomo[] }).pomodoros);
+        }
+    };
+
     return (
         <>
             <div className="flex flex-col min-h-screen p-3 bg-slate-300">
