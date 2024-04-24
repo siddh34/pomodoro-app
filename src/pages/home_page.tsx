@@ -54,6 +54,7 @@ function home_page() {
                             typeof response === "string" &&
                             response.length > 0
                         ) {
+                            console.log(response);
                             const [minutes, seconds] = response.split(":", 2);
                             console.log(minutes, seconds);
                             if (
@@ -93,10 +94,18 @@ function home_page() {
     }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
-        // TODO: Add support for custom time
+        let remTime = remainingTime;
+        let resTime;
+        if (remTime % 60 !== 0) {
+            const mins = Math.floor(remTime / 60);
+            const seconds = remTime % 60;
+            resTime = `${mins}m${seconds}s`
+        } else {
+            resTime = (remTime / 60).toString();
+        }
         dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
         invoke("start_pomodoro", {
-            timeGiven: `${(remainingTime / 60).toString()}`,
+            timeGiven: `${resTime}`,
         })
             .then((_) => {
                 dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
@@ -221,6 +230,16 @@ function home_page() {
                                 className="text-white bg-green-700 hover:bg-green-800 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800"
                             >
                                 History
+                            </button>
+                        </div>
+                        <div className="flex">
+                            <button
+                                onClick={() => {
+
+                                }}
+                                className="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800"
+                            >
+                                Suggestions?
                             </button>
                         </div>
                         <div className="flex flex-col"></div>

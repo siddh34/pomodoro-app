@@ -33,13 +33,16 @@ const NumberInput: React.FC<NumberInputProps> = ({
                 id="number-input"
                 value={!isTimerStarted ? value : constTime}
                 onChange={(e) => {
-                    if (parseInt(e.target.value) <= 0) {
-                        onChange(1 * 60);
-                    } else if(parseInt(e.target.value) >= 120) {
-                        onChange(120 * 60);
+                    let inputValue = Number(e.target.value);
+                    if (!Number.isInteger(inputValue)) {
+                        inputValue = Math.round(inputValue);
                     }
-                    else {
-                        onChange(Number(e.target.value) * 60);
+                    if (inputValue <= 0) {
+                        onChange(1 * 60);
+                    } else if (inputValue >= 120) {
+                        onChange(120 * 60);
+                    } else {
+                        onChange(inputValue * 60);
                     }
                 }}
                 disabled={isTimerStarted}
