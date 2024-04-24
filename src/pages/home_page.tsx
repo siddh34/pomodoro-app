@@ -54,6 +54,7 @@ function home_page() {
                             typeof response === "string" &&
                             response.length > 0
                         ) {
+                            console.log(response);
                             const [minutes, seconds] = response.split(":", 2);
                             console.log(minutes, seconds);
                             if (
@@ -93,10 +94,18 @@ function home_page() {
     }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
-        // TODO: Add support for custom time
+        let remTime = remainingTime;
+        let resTime;
+        if (remTime % 60 !== 0) {
+            const mins = Math.floor(remTime / 60);
+            const seconds = remTime % 60;
+            resTime = `${mins}m${seconds}s`
+        } else {
+            resTime = (remTime / 60).toString();
+        }
         dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
         invoke("start_pomodoro", {
-            timeGiven: `${(remainingTime / 60).toString()}`,
+            timeGiven: `${resTime}`,
         })
             .then((_) => {
                 dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
