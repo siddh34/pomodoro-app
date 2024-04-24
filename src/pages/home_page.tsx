@@ -2,85 +2,114 @@ import Chart from "../components/charts";
 import TimerToggler from "../components/time_toggler";
 import { useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
-import { useEffect, useState } from "react";
+import { useEffect, useContext } from "react";
+import { TimerContext } from "../context/TimeContext";
 import NumberInput from "../components/customTimeInput";
 
 function home_page() {
     const navigate = useNavigate();
-    const [constTime, setConstTime] = useState(300);
-    const [time, setTime] = useState(0);
-    const [remainingTime, setRemainingTime] = useState(60);
-    const [lastExecuted, setLastExecuted] = useState("");
-    const [isTimerStarted, setIsTimerStarted] = useState(false);
+    const { state, dispatch } = useContext(TimerContext);
+    const constTime = state.constTime;
+    const time = state.time;
+    const remainingTime = state.remainingTime;
+    const lastExecuted = state.lastExecuted;
+    const isTimerStarted = state.isTimerStarted;
 
-useEffect(() => {
-    let interval: NodeJS.Timeout;
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
 
-    if (lastExecuted === "break_pomodoro") {
-        setIsTimerStarted(true);
-        interval = setInterval(() => {
-            console.log(remainingTime);
-            setRemainingTime((prev) => {
-                if (prev <= 1) {
+        if (lastExecuted === "break_pomodoro") {
+            dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+            interval = setInterval(() => {
+                console.log(state.remainingTime);
+                if (state.remainingTime <= 1) {
                     clearInterval(interval);
-                    setLastExecuted("stop_pomodoro");
-                    return 0;
+                    dispatch({
+                        type: "SET_LAST_EXECUTED",
+                        payload: "stop_pomodoro",
+                    });
+                    dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
                 } else {
-                    setTime(constTime - prev + 1);
-                    return prev - 1;
+                    dispatch({
+                        type: "SET_TIME",
+                        payload: state.constTime - state.remainingTime + 1,
+                    });
+                    dispatch({
+                        type: "SET_REMAINING_TIME",
+                        payload: state.remainingTime - 1,
+                    });
                 }
-            });
-        }, 1000);
-    } else if (lastExecuted === "stop_pomodoro") {
-        setIsTimerStarted(false);
-        if (remainingTime <= 1) {
-            setRemainingTime(60);
-        }
-        setTime(0.0);
-    } else if (lastExecuted !== "") {
-        interval = setInterval(() => {
-            invoke("update_graph")
-                .then((response) => {
-                    if (typeof response === "string" && response.length > 0) {
-                        const [minutes, seconds] = response.split(":", 2);
-                        console.log(minutes, seconds);
+            }, 1000);
+        } else if (lastExecuted === "stop_pomodoro") {
+            dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
+            if (remainingTime <= 1) {
+                dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
+            }
+            dispatch({ type: "SET_TIME", payload: 0.1 });
+        } else if (lastExecuted !== "") {
+            interval = setInterval(() => {
+                invoke("update_graph")
+                    .then((response) => {
                         if (
-                            Number.isNaN(remainingTime) ||
-                            minutes === undefined ||
-                            seconds === undefined ||
-                            remainingTime === 0.1
+                            typeof response === "string" &&
+                            response.length > 0
                         ) {
-                            setLastExecuted("stop_pomodoro");
-                        } else {
-                            setRemainingTime(
-                                parseInt(minutes) * 60 + parseInt(seconds)
-                            );
-                            setTime(constTime - remainingTime);
-                            console.log(time)
+                            const [minutes, seconds] = response.split(":", 2);
+                            console.log(minutes, seconds);
+                            if (
+                                Number.isNaN(remainingTime) ||
+                                minutes === undefined ||
+                                seconds === undefined ||
+                                remainingTime === 0.1
+                            ) {
+                                dispatch({
+                                    type: "SET_LAST_EXECUTED",
+                                    payload: "stop_pomodoro",
+                                });
+                            } else {
+                                dispatch({
+                                    type: "SET_REMAINING_TIME",
+                                    payload:
+                                        parseInt(minutes) * 60 +
+                                        parseInt(seconds),
+                                });
+                                dispatch({
+                                    type: "SET_TIME",
+                                    payload: constTime - remainingTime,
+                                });
+                                console.log(time);
+                            }
                         }
-                    }
-                })
-                .catch(console.error);
-        }, 1000);
-    }
-
-    return () => {
-        if (interval) {
-            clearInterval(interval);
+                    })
+                    .catch(console.error);
+            }, 1000);
         }
-    };
-}, [lastExecuted, constTime, remainingTime, isTimerStarted]);
+
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
         // TODO: Add support for custom time
-        setIsTimerStarted(true);
-        invoke("start_pomodoro", { timeGiven: `${(remainingTime / 60).toString()}` })
+        dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+        invoke("start_pomodoro", {
+            timeGiven: `${(remainingTime / 60).toString()}`,
+        })
             .then((_) => {
-                setIsTimerStarted(true)
-                setConstTime(remainingTime);
-                setTime(0);
-                setRemainingTime(remainingTime);
-                setLastExecuted("start_pomodoro");
+                dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "start_pomodoro",
+                });
+                dispatch({ type: "SET_CONST_TIME", payload: remainingTime });
+                dispatch({ type: "SET_TIME", payload: 0 });
+                dispatch({
+                    type: "SET_REMAINING_TIME",
+                    payload: remainingTime,
+                });
             })
             .catch((error) => {
                 console.log(error);
@@ -90,10 +119,14 @@ useEffect(() => {
     const stop_pomodoro = () => {
         invoke("stop_pomodoro")
             .then((_) => {
-                setConstTime(5 * 60);
-                setTime(0.1);
-                setRemainingTime(0);
-                setLastExecuted("stop_pomodoro");
+                dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
+                dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "stop_pomodoro",
+                });
+                dispatch({ type: "SET_TIME", payload: 0.1 });
+                dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
             })
             .catch((error) => {
                 console.log(error);
@@ -101,13 +134,17 @@ useEffect(() => {
     };
 
     const break_pomodoro = () => {
-        setIsTimerStarted(true);
+        // setIsTimerStarted(true);
+        dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
         invoke("break_pomodoro", { givenTime: "5" })
             .then((_) => {
-                setLastExecuted("break_pomodoro");
-                setConstTime(5 * 60);
-                setTime(0);
-                setRemainingTime(5 * 60);
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "break_pomodoro",
+                });
+                dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 });
+                dispatch({ type: "SET_TIME", payload: 0 });
+                dispatch({ type: "SET_REMAINING_TIME", payload: 5 * 60 });
             })
             .catch((error) => {
                 console.log(error);
@@ -115,8 +152,8 @@ useEffect(() => {
     };
 
     const setRemainingTimer = (time: number) => {
-        setRemainingTime(time);
-    }
+        dispatch({ type: "SET_REMAINING_TIME", payload: time });
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-300">
@@ -195,7 +232,7 @@ useEffect(() => {
                         label="Set Time for a Pomodoro in minutes"
                         onChange={setRemainingTimer}
                         isTimerStarted={isTimerStarted}
-                        constTime={constTime /60}
+                        constTime={constTime / 60}
                     />
                 </div>
             </div>
