@@ -1,4 +1,4 @@
-import { Doughnut } from "react-chartjs-2";
+import {  Pie } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import { useEffect, useState } from "react";
 
@@ -39,7 +39,7 @@ const ChartComponent = ({
 
     return (
         <div className="flex flex-col items-center justify-center">
-            <Doughnut
+            <Pie
                 data={data}
                 options={{
                     plugins: {
