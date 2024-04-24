@@ -33,9 +33,12 @@ const NumberInput: React.FC<NumberInputProps> = ({
                 id="number-input"
                 value={!isTimerStarted ? value : constTime}
                 onChange={(e) => {
-                    if (e.target.value === "0") {
+                    if (parseInt(e.target.value) <= 0) {
                         onChange(1 * 60);
-                    } else {
+                    } else if(parseInt(e.target.value) >= 120) {
+                        onChange(120 * 60);
+                    }
+                    else {
                         onChange(Number(e.target.value) * 60);
                     }
                 }}
