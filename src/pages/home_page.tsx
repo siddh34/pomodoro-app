@@ -21,29 +21,24 @@ function home_page() {
         if (lastExecuted === "break_pomodoro") {
             dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
             interval = setInterval(() => {
-                console.log(remainingTime);
-                dispatch((prev: { state: { remainingTime: number; constTime: number; }; }) => {
-                    if (prev.state.remainingTime <= 1) {
-                        clearInterval(interval);
-                        dispatch({
-                            type: "SET_LAST_EXECUTED",
-                            payload: "stop_pomodoro",
-                        });
-                        dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
-                    } else {
-                        dispatch({
-                            type: "SET_TIME",
-                            payload:
-                                prev.state.constTime -
-                                prev.state.remainingTime +
-                                1,
-                        });
-                        dispatch({
-                            type: "SET_REMAINING_TIME",
-                            payload: prev.state.remainingTime - 1,
-                        });
-                    }
-                });;
+                console.log(state.remainingTime);
+                if (state.remainingTime <= 1) {
+                    clearInterval(interval);
+                    dispatch({
+                        type: "SET_LAST_EXECUTED",
+                        payload: "stop_pomodoro",
+                    });
+                    dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
+                } else {
+                    dispatch({
+                        type: "SET_TIME",
+                        payload: state.constTime - state.remainingTime + 1,
+                    });
+                    dispatch({
+                        type: "SET_REMAINING_TIME",
+                        payload: state.remainingTime - 1,
+                    });
+                }
             }, 1000);
         } else if (lastExecuted === "stop_pomodoro") {
             dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
@@ -67,13 +62,21 @@ function home_page() {
                                 seconds === undefined ||
                                 remainingTime === 0.1
                             ) {
-                                dispatch({type: "SET_LAST_EXECUTED", payload: "stop_pomodoro"});
+                                dispatch({
+                                    type: "SET_LAST_EXECUTED",
+                                    payload: "stop_pomodoro",
+                                });
                             } else {
                                 dispatch({
                                     type: "SET_REMAINING_TIME",
-                                    payload: parseInt(minutes) * 60 + parseInt(seconds),
+                                    payload:
+                                        parseInt(minutes) * 60 +
+                                        parseInt(seconds),
                                 });
-                                dispatch({type: "SET_TIME", payload: constTime - remainingTime});
+                                dispatch({
+                                    type: "SET_TIME",
+                                    payload: constTime - remainingTime,
+                                });
                                 console.log(time);
                             }
                         }
@@ -96,12 +99,17 @@ function home_page() {
             timeGiven: `${(remainingTime / 60).toString()}`,
         })
             .then((_) => {
-                dispatch({ type: "SET_IS_TIMER_STARTED", payload: true })
-                dispatch({ type: "SET_LAST_EXECUTED", payload : "start_pomodoro" });
+                dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "start_pomodoro",
+                });
                 dispatch({ type: "SET_CONST_TIME", payload: remainingTime });
                 dispatch({ type: "SET_TIME", payload: 0 });
-                dispatch({ type: "SET_REMAINING_TIME", payload: remainingTime });
-                
+                dispatch({
+                    type: "SET_REMAINING_TIME",
+                    payload: remainingTime,
+                });
             })
             .catch((error) => {
                 console.log(error);
@@ -112,10 +120,13 @@ function home_page() {
         invoke("stop_pomodoro")
             .then((_) => {
                 dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
-                dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 }); 
-                dispatch({ type: "SET_LAST_EXECUTED", payload: "stop_pomodoro" });
+                dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "stop_pomodoro",
+                });
                 dispatch({ type: "SET_TIME", payload: 0.1 });
-                dispatch({ type: "SET_REMAINING_TIME", payload: 0 });                
+                dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
             })
             .catch((error) => {
                 console.log(error);
@@ -127,7 +138,10 @@ function home_page() {
         dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
         invoke("break_pomodoro", { givenTime: "5" })
             .then((_) => {
-                dispatch({ type: "SET_LAST_EXECUTED", payload: "break_pomodoro" });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "break_pomodoro",
+                });
                 dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 });
                 dispatch({ type: "SET_TIME", payload: 0 });
                 dispatch({ type: "SET_REMAINING_TIME", payload: 5 * 60 });
