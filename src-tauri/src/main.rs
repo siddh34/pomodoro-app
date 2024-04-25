@@ -12,6 +12,8 @@ async fn start_pomodoro(time_given: String) -> String {
         .output()
         .await;
 
+    // TODO: Plug in suggestion add time
+
     match output {
         Ok(output) => String::from_utf8(output.stdout).unwrap_or_else(|_| "Error converting output to string".to_string()),
         Err(e) => e.to_string(),
@@ -58,6 +60,12 @@ async fn update_graph() -> String {
 }
 
 #[tauri::command]
+async fn get_suggestion_for_time(time_given: String) -> i32 {
+    // TODO: Integerate suggestion logic
+    return 5 * time_given.parse::<i32>().unwrap();
+}
+
+#[tauri::command]
 async fn get_history() -> Result<history::History, history::MyError> {
     let output = tokio::process::Command::new("pomodoro")
         .arg("history")
@@ -77,7 +85,7 @@ async fn get_history() -> Result<history::History, history::MyError> {
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph, get_history])
+        .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph, get_history, get_suggestion_for_time])
         .run(tauri::generate_context!())
         .expect("Error executing command");
 }

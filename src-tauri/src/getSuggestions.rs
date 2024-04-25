@@ -10,11 +10,11 @@ struct TimeData {
 }
 
 impl TimeData {
-    fn addTime(&mut self, time: i32){
+    fn addTime(&mut self, time: i32) {
         self.time.push(time);
     }
 
-    fn setFrequent(&mut self){
+    fn setFrequent(&mut self) {
         let mut map = HashMap::new();
         for time in &self.time {
             let count = map.entry(time).or_insert(0);
@@ -43,13 +43,13 @@ struct Data {
 }
 
 impl Data {
-    fn saveSchemaInFile(&self){
+    fn saveSchemaInFile(&self) {
         let data = serde_json::to_string(&self).unwrap();
         let mut file = File::create("suggestion_schema.json").unwrap();
         file.write_all(data.as_bytes()).unwrap();
     }
 
-    fn loadSchemaFromFile(&mut self){
+    fn loadSchemaFromFile(&mut self) {
         let mut file = File::open("suggestion_schema.json").unwrap();
         let mut data = String::new();
         file.read_to_string(&mut data).unwrap();
@@ -57,23 +57,35 @@ impl Data {
         *self = schema;
     }
 
-    fn addTime(&mut self, time: i32, period: &str){
-        if period == "Morning"{
+    fn addTime(&mut self, time: i32) {
+        let period = if currentTime >= chrono::NaiveTime::from_hms(6, 0, 0)
+            && currentTime < chrono::NaiveTime::from_hms(12, 0, 0)
+        {
+            "MORNING"
+        } else if currentTime >= chrono::NaiveTime::from_hms(12, 0, 0)
+            && currentTime < chrono::NaiveTime::from_hms(18, 0, 0)
+        {
+            "AFTERNOON"
+        } else {
+            "EVENING"
+        };
+
+        if period == "MORNING" {
             self.Morning.addTime(time);
-        } else if period == "Afternoon"{
+        } else if period == "AFTERNOON" {
             self.Afternoon.addTime(time);
-        } else if period == "Evening"{
+        } else if period == "EVENING" {
             self.Evening.addTime(time);
         }
     }
 
-    fn setFrequent(&mut self){
+    fn setFrequent(&mut self) {
         self.Morning.setFrequent();
         self.Afternoon.setFrequent();
         self.Evening.setFrequent();
     }
 
-    fn setAverage(&mut self){
+    fn setAverage(&mut self) {
         let mut sum = 0;
         for time in &self.Morning.time {
             sum += time;
@@ -97,9 +109,13 @@ impl Data {
         // check currentTime
         let currentTime = chrono::Local::now().time();
 
-        let period = if currentTime >= chrono::NaiveTime::from_hms(6, 0, 0) && currentTime < chrono::NaiveTime::from_hms(12, 0, 0){
+        let period = if currentTime >= chrono::NaiveTime::from_hms(6, 0, 0)
+            && currentTime < chrono::NaiveTime::from_hms(12, 0, 0)
+        {
             "MORNING"
-        } else if currentTime >= chrono::NaiveTime::from_hms(12, 0, 0) && currentTime < chrono::NaiveTime::from_hms(18, 0, 0){
+        } else if currentTime >= chrono::NaiveTime::from_hms(12, 0, 0)
+            && currentTime < chrono::NaiveTime::from_hms(18, 0, 0)
+        {
             "AFTERNOON"
         } else {
             "EVENING"
@@ -110,18 +126,17 @@ impl Data {
         self.setAverage();
         self.saveSchemaInFile();
 
-
         // generate suggestion
 
-        if(time <= 3){
-            return 25
+        if (time <= 3) {
+            return 25;
         }
 
         let mut needed_avg;
 
-        if period == "MORNING"{
+        if period == "MORNING" {
             needed_avg = self.Morning_Average;
-        } else if period == "AFTERNOON"{
+        } else if period == "AFTERNOON" {
             needed_avg = self.Afternoon_Average;
         } else {
             needed_avg = self.Evening_Average;
