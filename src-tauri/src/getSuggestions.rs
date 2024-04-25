@@ -91,7 +91,44 @@ impl Data {
         self.Evening_Average = sum / self.Evening.time.len() as i32;
     }
 
-    fn generateSuggestion(){
+    fn generateSuggestion(&mut time: String) -> i32 {
+        let time = time.parse::<i32>().unwrap();
 
+        // check currentTime
+        let currentTime = chrono::Local::now().time();
+
+        let period = if currentTime >= chrono::NaiveTime::from_hms(6, 0, 0) && currentTime < chrono::NaiveTime::from_hms(12, 0, 0){
+            "MORNING"
+        } else if currentTime >= chrono::NaiveTime::from_hms(12, 0, 0) && currentTime < chrono::NaiveTime::from_hms(18, 0, 0){
+            "AFTERNOON"
+        } else {
+            "EVENING"
+        };
+
+        self.addTime(time, period);
+        self.setFrequent();
+        self.setAverage();
+        self.saveSchemaInFile();
+
+
+        // generate suggestion
+
+        if(time <= 3){
+            return 25
+        }
+
+        let mut needed_avg;
+
+        if period == "MORNING"{
+            needed_avg = self.Morning_Average;
+        } else if period == "AFTERNOON"{
+            needed_avg = self.Afternoon_Average;
+        } else {
+            needed_avg = self.Evening_Average;
+        }
+
+        let suggestion = (needed_avg - time) / needed_avg;
+
+        return (suggestion * 5).round(0) as i32;
     }
 }
