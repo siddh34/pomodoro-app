@@ -10,13 +10,13 @@ struct TimeData {
     frequent: i32,
 }
 
-trait NewTrait {
+trait TimeTrait {
      fn add_time(&mut self, time: i32);
 
     fn set_frequent(&mut self);
 }
 
-impl NewTrait for TimeData {
+impl TimeTrait for TimeData {
      fn add_time(&mut self, time: i32) {
         self.time.push(time);
     }
