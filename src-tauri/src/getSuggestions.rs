@@ -43,6 +43,37 @@ struct Data {
 }
 
 impl Data {
+    fn createFile() {
+        let data = Data {
+            Morning_Average: 0,
+            Afternoon_Average: 0,
+            Evening_Average: 0,
+            Morning: TimeData {
+                time: Vec::new(),
+                frequent: 0,
+            },
+            Afternoon: TimeData {
+                time: Vec::new(),
+                frequent: 0,
+            },
+            Evening: TimeData {
+                time: Vec::new(),
+                frequent: 0,
+            },
+        };
+        let data = serde_json::to_string(&data).unwrap();
+        let mut file = File::create("suggestion_schema.json").unwrap();
+        file.write_all(data.as_bytes()).unwrap();
+    }
+
+    fn checkFile() {
+        let file = File::open("suggestion_schema.json");
+        match file {
+            Ok(_) => (),
+            Err(_) => Data::createFile(),
+        }
+    }
+
     fn saveSchemaInFile(&self) {
         let data = serde_json::to_string(&self).unwrap();
         let mut file = File::create("suggestion_schema.json").unwrap();

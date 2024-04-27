@@ -13,6 +13,7 @@ async fn start_pomodoro(time_given: String) -> String {
         .await;
 
     // TODO: Plug in suggestion add time
+    
 
     match output {
         Ok(output) => String::from_utf8(output.stdout).unwrap_or_else(|_| "Error converting output to string".to_string()),
@@ -84,6 +85,7 @@ async fn get_history() -> Result<history::History, history::MyError> {
 }
 
 fn main() {
+
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph, get_history, get_suggestion_for_time])
         .run(tauri::generate_context!())
