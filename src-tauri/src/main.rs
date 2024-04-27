@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 pub mod history;
+pub mod get_suggestions;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -85,6 +86,7 @@ async fn get_history() -> Result<history::History, history::MyError> {
 }
 
 fn main() {
+    // get_suggestions::Data::checkFile();
 
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![start_pomodoro, stop_pomodoro, break_pomodoro, update_graph, get_history, get_suggestion_for_time])
