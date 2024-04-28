@@ -6,7 +6,6 @@ use get_suggestions::Data;
 use get_suggestions::DataTrait;
 use serde_json::to_string;
 use std::env;
-use std::os::unix::process;
 use chrono;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
