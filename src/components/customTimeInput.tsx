@@ -38,7 +38,7 @@ const NumberInput: React.FC<NumberInputProps> = ({
                         inputValue = Math.round(inputValue);
                     }
                     if (inputValue <= 0) {
-                        onChange(1 * 60);
+                        onChange(0 * 60);
                     } else if (inputValue >= 120) {
                         onChange(120 * 60);
                     } else {

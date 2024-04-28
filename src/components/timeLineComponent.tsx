@@ -49,6 +49,17 @@ function TimeLineComponent({ fetchedHistory }: { fetchedHistory: Pomo[] }) {
                                         </p>
                                     )}
                                     {
+                                        pomo.duration !== null ? (
+                                            <p className="text-base font-normal text-gray-500 dark:text-gray-600">
+                                                Duration: {`${pomo.duration}`} minutes
+                                            </p>
+                                        ) : (
+                                            <p className="text-base font-normal text-gray-500 dark:text-gray-600">
+                                                Duration: No Duration
+                                            </p>
+                                        )
+                                    }
+                                    {
                                         pomo.tags !== null ? (
                                             <p className="text-base font-normal text-gray-500 dark:text-gray-600">
                                                 Tags: {pomo.tags.join(", ")}

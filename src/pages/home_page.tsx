@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useContext } from "react";
 import { TimerContext } from "../context/TimeContext";
 import NumberInput from "../components/customTimeInput";
+import toast, { Toaster } from "react-hot-toast";
 
 function home_page() {
     const navigate = useNavigate();
@@ -14,6 +15,8 @@ function home_page() {
     const remainingTime = state.remainingTime;
     const lastExecuted = state.lastExecuted;
     const isTimerStarted = state.isTimerStarted;
+
+    const notifyNotDoable = () => toast.error("Please select a proper time");
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -94,12 +97,17 @@ function home_page() {
     }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
+        if (remainingTime === 0 || remainingTime === 0.1) {
+            notifyNotDoable();
+            return;
+        }
+
         let remTime = remainingTime;
         let resTime;
         if (remTime % 60 !== 0) {
             const mins = Math.floor(remTime / 60);
             const seconds = remTime % 60;
-            resTime = `${mins}m${seconds}s`
+            resTime = `${mins}m${seconds}s`;
         } else {
             resTime = (remTime / 60).toString();
         }
@@ -160,6 +168,17 @@ function home_page() {
             });
     };
 
+    const suggestion = () => {
+        let remTime = remainingTime / 60;
+        invoke("get_suggestion_for_time", {
+            timeGiven: `${remTime}`,
+        })
+            .then((response: unknown) => {
+                dispatch({ type: "SET_REMAINING_TIME", payload: response as number * 60 });
+            })
+            .catch(console.error);
+    };
+
     const setRemainingTimer = (time: number) => {
         dispatch({ type: "SET_REMAINING_TIME", payload: time });
     };
@@ -172,6 +191,7 @@ function home_page() {
                         Pomodoro App
                     </h1>
                 </div>
+                <Toaster />
                 <div className="flex items-center justify-center m-10">
                     <div className="flex flex-col items-center justify-evenly">
                         <h1>Even Time</h1>
@@ -234,9 +254,7 @@ function home_page() {
                         </div>
                         <div className="flex">
                             <button
-                                onClick={() => {
-
-                                }}
+                                onClick={() => {suggestion()}}
                                 className="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800"
                             >
                                 Suggestions?
