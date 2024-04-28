@@ -6,6 +6,7 @@ use get_suggestions::Data;
 use get_suggestions::DataTrait;
 use serde_json::to_string;
 use std::env;
+use std::os::unix::process;
 use chrono;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
@@ -113,6 +114,12 @@ async fn get_history() -> Result<history::History, history::MyError> {
     Ok(history)
 }
 
+#[tauri::command]
+fn save_data(){
+    let data = Data::load_from_env();
+    data.save_schema_in_file();
+}
+
 fn main() {
     let data = Data::new();
     let data_string = to_string(&data).expect("Failed to serialize data");
@@ -125,7 +132,8 @@ fn main() {
             break_pomodoro,
             update_graph,
             get_history,
-            get_suggestion_for_time
+            get_suggestion_for_time,
+            save_data
         ])
         .run(tauri::generate_context!())
         .expect("Error executing command");

@@ -67,9 +67,16 @@ pub trait DataTrait {
     fn generate_suggestion(&mut self, time: String) -> i32;
 
     fn load_from_env() -> Data;
+
+    fn save_to_env(&self);
 }
 
 impl DataTrait for Data {
+    fn save_to_env(&self) {
+        let data = serde_json::to_string(&self).expect("Failed to serialize JSON");
+        env::set_var("suggestion", data);
+    }
+
     fn load_from_env() -> Data {
         let data = env::var("suggestion").expect("suggestion_ENV_VAR is not set");
         let loaded_data: Data = serde_json::from_str(&data).expect("Failed to parse JSON");
@@ -124,6 +131,7 @@ impl DataTrait for Data {
         } else if period == "EVENING" {
             self.evening.add_time(time);
         }
+        Data::save_to_env(&self);
     }
 
     fn set_frequent(&mut self) {
@@ -148,6 +156,7 @@ impl DataTrait for Data {
             sum += time;
         }
         self.evening_average = sum / self.evening.time.len() as i32;
+        
     }
 
     fn generate_suggestion(&mut self, time: String) -> i32 {
@@ -170,7 +179,7 @@ impl DataTrait for Data {
         self.set_frequent();
         self.set_average();
         self.save_schema_in_file();
-        
+        Data::save_to_env(&self);
         // generate suggestion
         
         if time <= 3 {
