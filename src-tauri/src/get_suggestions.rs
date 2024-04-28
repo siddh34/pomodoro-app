@@ -1,23 +1,25 @@
+use chrono; // Add this line to import the chrono crate
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::fs::File;
-use chrono; // Add this line to import the chrono crate
-use std::io::prelude::*;
+use std::io::{ BufReader, BufWriter };
+use std::path::Path;
+use std::env;
 
 #[derive(Serialize, Deserialize, Debug)]
-struct TimeData {
+pub struct TimeData {
     time: Vec<i32>,
     frequent: i32,
 }
 
 trait TimeTrait {
-     fn add_time(&mut self, time: i32);
+    fn add_time(&mut self, time: i32);
 
     fn set_frequent(&mut self);
 }
 
 impl TimeTrait for TimeData {
-     fn add_time(&mut self, time: i32) {
+    fn add_time(&mut self, time: i32) {
         self.time.push(time);
     }
 
@@ -40,7 +42,7 @@ impl TimeTrait for TimeData {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-struct Data {
+pub struct Data {
     morning_average: i32,
     afternoon_average: i32,
     evening_average: i32,
@@ -49,10 +51,8 @@ struct Data {
     evening: TimeData,
 }
 
-trait DataTrait {
-    fn create_file();
-
-    fn check_file();
+pub trait DataTrait {
+    fn new() -> Data;
 
     fn save_schema_in_file(&self);
 
@@ -65,11 +65,19 @@ trait DataTrait {
     fn set_average(&mut self);
 
     fn generate_suggestion(&mut self, time: String) -> i32;
+
+    fn load_from_env() -> Data;
 }
 
 impl DataTrait for Data {
-    fn create_file() {
-        let data = Data {
+    fn load_from_env() -> Data {
+        let data = env::var("suggestion").expect("suggestion_ENV_VAR is not set");
+        let loaded_data: Data = serde_json::from_str(&data).expect("Failed to parse JSON");
+        loaded_data
+    }
+
+    fn new() -> Data {
+        let mut data = Data {
             morning_average: 0,
             afternoon_average: 0,
             evening_average: 0,
@@ -86,31 +94,26 @@ impl DataTrait for Data {
                 frequent: 0,
             },
         };
-        let data = serde_json::to_string(&data).unwrap();
-        let mut file = File::create("suggestion_schema.json").unwrap();
-        file.write_all(data.as_bytes()).unwrap();
-    }
 
-    fn check_file() {
-        let file = File::open("suggestion_schema.json");
-        match file {
-            Ok(_) => (),
-            Err(_) => Data::create_file(),
+        if Path::new("suggestion_schema.json").exists() {
+            data.load_schema_from_file();
+        } else {
+            data.save_schema_in_file();
         }
+        return data;
     }
 
     fn save_schema_in_file(&self) {
-        let data = serde_json::to_string(&self).unwrap();
-        let mut file = File::create("suggestion_schema.json").unwrap();
-        file.write_all(data.as_bytes()).unwrap();
+        let file = File::create("suggestion_schema.json").unwrap();
+        let writer = BufWriter::new(file);
+        serde_json::to_writer(writer, &self).unwrap();
     }
 
     fn load_schema_from_file(&mut self) {
-        let mut file = File::open("suggestion_schema.json").unwrap();
-        let mut data = String::new();
-        file.read_to_string(&mut data).unwrap();
-        let schema: Data = serde_json::from_str(&data).unwrap();
-        *self = schema;
+        let file = File::open("suggestion_schema.json").unwrap();
+        let reader = BufReader::new(file);
+        let loaded_data: Data = serde_json::from_reader(reader).unwrap();
+        *self = loaded_data;
     }
 
     fn add_time(&mut self, time: i32, period: &str) {
@@ -149,7 +152,6 @@ impl DataTrait for Data {
 
     fn generate_suggestion(&mut self, time: String) -> i32 {
         let time = time.parse::<i32>().unwrap();
-
         // check currentTime
         let current_time = chrono::Local::now().time();
 
@@ -165,19 +167,18 @@ impl DataTrait for Data {
             "EVENING"
         };
 
-        self.add_time(time, period);
         self.set_frequent();
         self.set_average();
         self.save_schema_in_file();
-
+        
         // generate suggestion
-
+        
         if time <= 3 {
             return 25;
         }
-
+        
         let needed_avg;
-
+        
         if period == "MORNING" {
             needed_avg = self.morning_average;
         } else if period == "AFTERNOON" {
@@ -185,9 +186,8 @@ impl DataTrait for Data {
         } else {
             needed_avg = self.evening_average;
         }
-
+        
         let suggestion = (needed_avg as f64 - time as f64) / needed_avg as f64;
-
         return (suggestion * 5.0).round() as i32;
     }
 }
