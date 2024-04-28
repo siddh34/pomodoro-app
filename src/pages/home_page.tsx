@@ -5,6 +5,7 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useContext } from "react";
 import { TimerContext } from "../context/TimeContext";
 import NumberInput from "../components/customTimeInput";
+import toast, { Toaster } from "react-hot-toast";
 
 function home_page() {
     const navigate = useNavigate();
@@ -14,6 +15,9 @@ function home_page() {
     const remainingTime = state.remainingTime;
     const lastExecuted = state.lastExecuted;
     const isTimerStarted = state.isTimerStarted;
+
+    const notifyNotDoable = () => toast.error("Please select a proper time");
+
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -94,6 +98,12 @@ function home_page() {
     }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
+        if(remainingTime === 0 || remainingTime === 0.1) {
+            notifyNotDoable();
+            return;
+        }
+
+
         let remTime = remainingTime;
         let resTime;
         if (remTime % 60 !== 0) {
@@ -172,6 +182,7 @@ function home_page() {
                         Pomodoro App
                     </h1>
                 </div>
+                <Toaster />
                 <div className="flex items-center justify-center m-10">
                     <div className="flex flex-col items-center justify-evenly">
                         <h1>Even Time</h1>

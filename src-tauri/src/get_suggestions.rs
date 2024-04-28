@@ -1,10 +1,10 @@
 use chrono; // Add this line to import the chrono crate
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::fs::File;
-use std::io::{ BufReader, BufWriter };
-use std::path::Path;
 use std::env;
+use std::fs::File;
+use std::io::{BufReader, BufWriter};
+use std::path::Path;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TimeData {
@@ -131,7 +131,10 @@ impl DataTrait for Data {
         } else if period == "EVENING" {
             self.evening.add_time(time);
         }
-        Data::save_to_env(&self);
+        self.set_frequent();
+        self.set_average();
+        self.save_schema_in_file();
+        self.save_to_env();
     }
 
     fn set_frequent(&mut self) {
@@ -145,18 +148,34 @@ impl DataTrait for Data {
         for time in &self.morning.time {
             sum += time;
         }
-        self.morning_average = sum / self.morning.time.len() as i32;
+
+        if self.morning.time.len() == 0 {
+            self.morning_average = 0;
+        } else {
+            self.morning_average = sum / self.morning.time.len() as i32;
+        }
+
         sum = 0;
         for time in &self.afternoon.time {
             sum += time;
         }
-        self.afternoon_average = sum / self.afternoon.time.len() as i32;
+
+        if self.afternoon.time.len() == 0 {
+            self.afternoon_average = 0;
+        } else {
+            self.afternoon_average = sum / self.afternoon.time.len() as i32;
+        }
+
         sum = 0;
         for time in &self.evening.time {
             sum += time;
         }
-        self.evening_average = sum / self.evening.time.len() as i32;
-        
+
+        if self.evening.time.len() == 0 {
+            self.evening_average = 0;
+        } else {
+            self.evening_average = sum / self.evening.time.len() as i32;
+        }
     }
 
     fn generate_suggestion(&mut self, time: String) -> i32 {
@@ -176,18 +195,14 @@ impl DataTrait for Data {
             "EVENING"
         };
 
-        self.set_frequent();
-        self.set_average();
-        self.save_schema_in_file();
-        Data::save_to_env(&self);
         // generate suggestion
-        
+
         if time <= 3 {
             return 25;
         }
-        
+
         let needed_avg;
-        
+
         if period == "MORNING" {
             needed_avg = self.morning_average;
         } else if period == "AFTERNOON" {
@@ -195,7 +210,7 @@ impl DataTrait for Data {
         } else {
             needed_avg = self.evening_average;
         }
-        
+
         let suggestion = (needed_avg as f64 - time as f64) / needed_avg as f64;
         return (suggestion * 5.0).round() as i32;
     }
