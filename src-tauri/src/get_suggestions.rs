@@ -202,16 +202,24 @@ impl DataTrait for Data {
         }
 
         let needed_avg;
-
+        let mut needed_length;
         if period == "MORNING" {
             needed_avg = self.morning_average;
+            needed_length = self.morning.time.len();
         } else if period == "AFTERNOON" {
             needed_avg = self.afternoon_average;
+            needed_length = self.afternoon.time.len();
         } else {
             needed_avg = self.evening_average;
+            needed_length = self.evening.time.len();
         }
 
-        let suggestion = (needed_avg as f64 - time as f64) / needed_avg as f64;
-        return (suggestion * 5.0).round() as i32;
+        if needed_length == 0 {
+            needed_length = 1;
+        }
+
+        let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
+
+        return (suggestion * 5.0).round().abs() as i32;
     }
 }
