@@ -11,7 +11,7 @@ use std::sync::Mutex;
 use std::time::Duration;
 
 lazy_static! {
-    static ref DATA_CACHE: Mutex<TimedSizedCache<String, Data>> = Mutex::new(
+    pub static ref DATA_CACHE: Mutex<TimedSizedCache<String, Data>> = Mutex::new(
         TimedSizedCache::with_size_and_lifespan(100, Duration::from_secs(600).as_secs())
     );
 }
@@ -76,13 +76,11 @@ pub trait DataTrait {
 
     fn generate_suggestion(&mut self, time: String) -> i32;
 
-    fn load_from_env() -> Data;
-
     fn save_to_env(&self);
 
-    fn load_data_from_env_var() -> Data;
-
     fn save_to_cache(&self);
+
+    fn get_data_from_file() -> Data;
 }
 
 impl DataTrait for Data {
@@ -91,35 +89,17 @@ impl DataTrait for Data {
         env::set_var("suggestion", data);
     }
 
+    fn get_data_from_file() -> Data {
+        let file = File::open("suggestion_schema.json").unwrap();
+        let reader = BufReader::new(file);
+        let loaded_data: Data = serde_json::from_reader(reader).unwrap();
+        return loaded_data;
+    }
+
+
     fn save_to_cache(&self) {
         let key = "key".to_string();
         DATA_CACHE.lock().unwrap().cache_set(key, self.clone());
-    }
-
-    fn load_from_env() -> Data {
-        let key = "key".to_string();
-        let mut data_cache = DATA_CACHE.lock().unwrap();
-
-        if let Some(data) = data_cache.cache_get(&key) {
-            // If the data is in the cache and hasn't expired, use it
-            println!("Data retrieved from cache: {:?}", data);
-            data.clone()
-        } else {
-            println!("cache expired");
-            // If the data is not in the cache or has expired, load it from the environment variable
-            let loaded_data = Data::load_data_from_env_var();
-
-            // Refresh the cache entry
-            data_cache.cache_set(key, loaded_data.clone());
-
-            loaded_data
-        }
-    }
-
-    fn load_data_from_env_var() -> Data {
-        let data = env::var("suggestion").expect("suggestion_ENV_VAR is not set");
-        let loaded_data: Data = serde_json::from_str(&data).expect("Failed to parse JSON");
-        loaded_data
     }
 
     fn new() -> Data {
@@ -270,7 +250,7 @@ impl DataTrait for Data {
 
             return (suggestion * 5.0).round().abs() as i32;
         } else {
-            let loaded_data = Data::load_data_from_env_var();
+            let loaded_data = Data::get_data_from_file();
             data_cache.cache_set(key, loaded_data.clone());
 
             let needed_avg;
