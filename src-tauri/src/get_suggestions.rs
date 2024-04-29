@@ -30,6 +30,10 @@ trait TimeTrait {
 
 impl TimeTrait for TimeData {
     fn add_time(&mut self, time: i32) {
+        if self.time.len() >= 15 {
+            self.time.remove(0);
+        }
+
         self.time.push(time);
     }
 
