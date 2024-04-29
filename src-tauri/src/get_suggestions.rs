@@ -1,12 +1,22 @@
+use cached::{Cached, TimedSizedCache};
 use chrono; // Add this line to import the chrono crate
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
+use std::sync::Mutex;
+use std::time::Duration;
 
-#[derive(Serialize, Deserialize, Debug)]
+lazy_static! {
+    static ref DATA_CACHE: Mutex<TimedSizedCache<String, Data>> = Mutex::new(
+        TimedSizedCache::with_size_and_lifespan(100, Duration::from_secs(600).as_secs())
+    );
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TimeData {
     time: Vec<i32>,
     frequent: i32,
@@ -41,7 +51,7 @@ impl TimeTrait for TimeData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Data {
     morning_average: i32,
     afternoon_average: i32,
@@ -69,6 +79,10 @@ pub trait DataTrait {
     fn load_from_env() -> Data;
 
     fn save_to_env(&self);
+
+    fn load_data_from_env_var() -> Data;
+
+    fn save_to_cache(&self);
 }
 
 impl DataTrait for Data {
@@ -77,7 +91,32 @@ impl DataTrait for Data {
         env::set_var("suggestion", data);
     }
 
+    fn save_to_cache(&self) {
+        let key = "key".to_string();
+        DATA_CACHE.lock().unwrap().cache_set(key, self.clone());
+    }
+
     fn load_from_env() -> Data {
+        let key = "key".to_string();
+        let mut data_cache = DATA_CACHE.lock().unwrap();
+
+        if let Some(data) = data_cache.cache_get(&key) {
+            // If the data is in the cache and hasn't expired, use it
+            println!("Data retrieved from cache: {:?}", data);
+            data.clone()
+        } else {
+            println!("cache expired");
+            // If the data is not in the cache or has expired, load it from the environment variable
+            let loaded_data = Data::load_data_from_env_var();
+
+            // Refresh the cache entry
+            data_cache.cache_set(key, loaded_data.clone());
+
+            loaded_data
+        }
+    }
+
+    fn load_data_from_env_var() -> Data {
         let data = env::var("suggestion").expect("suggestion_ENV_VAR is not set");
         let loaded_data: Data = serde_json::from_str(&data).expect("Failed to parse JSON");
         loaded_data
@@ -102,10 +141,13 @@ impl DataTrait for Data {
             },
         };
 
+        let mut data_cache = DATA_CACHE.lock().unwrap();
         if Path::new("suggestion_schema.json").exists() {
             data.load_schema_from_file();
+            data_cache.cache_set("key".to_string(), data.clone());
         } else {
             data.save_schema_in_file();
+            data_cache.cache_set("key".to_string(), data.clone());
         }
         return data;
     }
@@ -135,6 +177,7 @@ impl DataTrait for Data {
         self.set_average();
         self.save_schema_in_file();
         self.save_to_env();
+        self.save_to_cache();
     }
 
     fn set_frequent(&mut self) {
