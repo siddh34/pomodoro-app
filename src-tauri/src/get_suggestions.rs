@@ -1,5 +1,5 @@
 use cached::{Cached, TimedSizedCache};
-use chrono; // Add this line to import the chrono crate
+use chrono;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -244,25 +244,55 @@ impl DataTrait for Data {
             return 25;
         }
 
-        let needed_avg;
-        let mut needed_length;
-        if period == "MORNING" {
-            needed_avg = self.morning_average;
-            needed_length = self.morning.time.len();
-        } else if period == "AFTERNOON" {
-            needed_avg = self.afternoon_average;
-            needed_length = self.afternoon.time.len();
+        let key = "key".to_string();
+        let mut data_cache = DATA_CACHE.lock().unwrap();
+
+        if let Some(data) = data_cache.cache_get(&key) {
+            // If the data is in the cache and hasn't expired, use it
+            let needed_avg;
+            let mut needed_length;
+            if period == "MORNING" {
+                needed_avg = data.morning_average;
+                needed_length = data.morning.time.len();
+            } else if period == "AFTERNOON" {
+                needed_avg = data.afternoon_average;
+                needed_length = data.afternoon.time.len();
+            } else {
+                needed_avg = data.evening_average;
+                needed_length = data.evening.time.len();
+            }
+
+            if needed_length == 0 {
+                needed_length = 1;
+            }
+
+            let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
+
+            return (suggestion * 5.0).round().abs() as i32;
         } else {
-            needed_avg = self.evening_average;
-            needed_length = self.evening.time.len();
+            let loaded_data = Data::load_data_from_env_var();
+            data_cache.cache_set(key, loaded_data.clone());
+
+            let needed_avg;
+            let mut needed_length;
+            if period == "MORNING" {
+                needed_avg = loaded_data.morning_average;
+                needed_length = loaded_data.morning.time.len();
+            } else if period == "AFTERNOON" {
+                needed_avg = loaded_data.afternoon_average;
+                needed_length = loaded_data.afternoon.time.len();
+            } else {
+                needed_avg = loaded_data.evening_average;
+                needed_length = loaded_data.evening.time.len();
+            }
+
+            if needed_length == 0 {
+                needed_length = 1;
+            }
+
+            let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
+
+            return (suggestion * 5.0).round().abs() as i32;
         }
-
-        if needed_length == 0 {
-            needed_length = 1;
-        }
-
-        let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
-
-        return (suggestion * 5.0).round().abs() as i32;
     }
 }
