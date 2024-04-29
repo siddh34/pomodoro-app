@@ -1,6 +1,6 @@
 import Chart from "../components/charts";
 import TimerToggler from "../components/time_toggler";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useState } from "react";
 import NumberInput from "../components/customTimeInput";
@@ -13,63 +13,63 @@ function home_page() {
     const [lastExecuted, setLastExecuted] = useState("");
     const [isTimerStarted, setIsTimerStarted] = useState(false);
 
-useEffect(() => {
-    let interval: NodeJS.Timeout;
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
 
-    if (lastExecuted === "break_pomodoro") {
-        setIsTimerStarted(true);
-        interval = setInterval(() => {
-            console.log(remainingTime);
-            setRemainingTime((prev) => {
-                if (prev <= 1) {
-                    clearInterval(interval);
-                    setLastExecuted("stop_pomodoro");
-                    return 0;
-                } else {
-                    setTime(constTime - prev + 1);
-                    return prev - 1;
-                }
-            });
-        }, 1000);
-    } else if (lastExecuted === "stop_pomodoro") {
-        setIsTimerStarted(false);
-        if (remainingTime <= 1) {
-            setRemainingTime(60);
-        }
-        setTime(0.0);
-    } else if (lastExecuted !== "") {
-        interval = setInterval(() => {
-            invoke("update_graph")
-                .then((response) => {
-                    if (typeof response === "string" && response.length > 0) {
-                        const [minutes, seconds] = response.split(":", 2);
-                        console.log(minutes, seconds);
-                        if (
-                            Number.isNaN(remainingTime) ||
-                            minutes === undefined ||
-                            seconds === undefined ||
-                            remainingTime === 0.1
-                        ) {
-                            setLastExecuted("stop_pomodoro");
-                        } else {
-                            setRemainingTime(
-                                parseInt(minutes) * 60 + parseInt(seconds)
-                            );
-                            setTime(constTime - remainingTime);
-                            console.log(time)
-                        }
+        if (lastExecuted === "break_pomodoro") {
+            setIsTimerStarted(true);
+            interval = setInterval(() => {
+                console.log(remainingTime);
+                setRemainingTime((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(interval);
+                        setLastExecuted("stop_pomodoro");
+                        return 0;
+                    } else {
+                        setTime(constTime - prev + 1);
+                        return prev - 1;
                     }
-                })
-                .catch(console.error);
-        }, 1000);
-    }
-
-    return () => {
-        if (interval) {
-            clearInterval(interval);
+                });
+            }, 1000);
+        } else if (lastExecuted === "stop_pomodoro") {
+            setIsTimerStarted(false);
+            if (remainingTime <= 1) {
+                setRemainingTime(60);
+            }
+            setTime(0.0);
+        } else if (lastExecuted !== "") {
+            interval = setInterval(() => {
+                invoke("update_graph")
+                    .then((response) => {
+                        if (typeof response === "string" && response.length > 0) {
+                            const [minutes, seconds] = response.split(":", 2);
+                            console.log(minutes, seconds);
+                            if (
+                                Number.isNaN(remainingTime) ||
+                                minutes === undefined ||
+                                seconds === undefined ||
+                                remainingTime === 0.1
+                            ) {
+                                setLastExecuted("stop_pomodoro");
+                            } else {
+                                setRemainingTime(
+                                    parseInt(minutes) * 60 + parseInt(seconds)
+                                );
+                                setTime(constTime - remainingTime);
+                                console.log(time)
+                            }
+                        }
+                    })
+                    .catch(console.error);
+            }, 1000);
         }
-    };
-}, [lastExecuted, constTime, remainingTime, isTimerStarted]);
+
+        return () => {
+            if (interval) {
+                clearInterval(interval);
+            }
+        };
+    }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
         // TODO: Add support for custom time
@@ -115,8 +115,14 @@ useEffect(() => {
     };
 
     const setRemainingTimer = (time: number) => {
-        setRemainingTime(time);
-    }
+        if (time <= 0) {
+            setRemainingTime(1); // Set default time to 1 min if time is 0 or negative
+        } else if (time > 120) {
+            setRemainingTime(120); // Set default time to 120 mins if time is greater than 120
+        } else {
+            setRemainingTime(time); // Set the provided time if it's within the valid range
+        }
+    };
 
     return (
         <div className="flex flex-col min-h-screen bg-slate-300">
@@ -195,7 +201,7 @@ useEffect(() => {
                         label="Set Time for a Pomodoro in minutes"
                         onChange={setRemainingTimer}
                         isTimerStarted={isTimerStarted}
-                        constTime={constTime /60}
+                        constTime={constTime / 60}
                     />
                 </div>
             </div>
@@ -206,12 +212,12 @@ useEffect(() => {
                     </span>
                     <ul className="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
                         <li>
-                            <a
-                                href="#"
+                            <Link
                                 className="hover:underline me-4 md:me-6"
+                                to="/about"
                             >
                                 About
-                            </a>
+                            </Link>
                         </li>
                         <li>
                             <a
