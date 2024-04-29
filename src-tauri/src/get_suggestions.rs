@@ -1,12 +1,22 @@
-use chrono; // Add this line to import the chrono crate
+use cached::{Cached, TimedSizedCache};
+use chrono;
+use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
+use std::sync::Mutex;
+use std::time::Duration;
 
-#[derive(Serialize, Deserialize, Debug)]
+lazy_static! {
+    pub static ref DATA_CACHE: Mutex<TimedSizedCache<String, Data>> = Mutex::new(
+        TimedSizedCache::with_size_and_lifespan(100, Duration::from_secs(600).as_secs())
+    );
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct TimeData {
     time: Vec<i32>,
     frequent: i32,
@@ -41,7 +51,7 @@ impl TimeTrait for TimeData {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Data {
     morning_average: i32,
     afternoon_average: i32,
@@ -66,9 +76,11 @@ pub trait DataTrait {
 
     fn generate_suggestion(&mut self, time: String) -> i32;
 
-    fn load_from_env() -> Data;
-
     fn save_to_env(&self);
+
+    fn save_to_cache(&self);
+
+    fn get_data_from_file() -> Data;
 }
 
 impl DataTrait for Data {
@@ -77,10 +89,17 @@ impl DataTrait for Data {
         env::set_var("suggestion", data);
     }
 
-    fn load_from_env() -> Data {
-        let data = env::var("suggestion").expect("suggestion_ENV_VAR is not set");
-        let loaded_data: Data = serde_json::from_str(&data).expect("Failed to parse JSON");
-        loaded_data
+    fn get_data_from_file() -> Data {
+        let file = File::open("suggestion_schema.json").unwrap();
+        let reader = BufReader::new(file);
+        let loaded_data: Data = serde_json::from_reader(reader).unwrap();
+        return loaded_data;
+    }
+
+
+    fn save_to_cache(&self) {
+        let key = "key".to_string();
+        DATA_CACHE.lock().unwrap().cache_set(key, self.clone());
     }
 
     fn new() -> Data {
@@ -102,10 +121,13 @@ impl DataTrait for Data {
             },
         };
 
+        let mut data_cache = DATA_CACHE.lock().unwrap();
         if Path::new("suggestion_schema.json").exists() {
             data.load_schema_from_file();
+            data_cache.cache_set("key".to_string(), data.clone());
         } else {
             data.save_schema_in_file();
+            data_cache.cache_set("key".to_string(), data.clone());
         }
         return data;
     }
@@ -135,6 +157,7 @@ impl DataTrait for Data {
         self.set_average();
         self.save_schema_in_file();
         self.save_to_env();
+        self.save_to_cache();
     }
 
     fn set_frequent(&mut self) {
@@ -201,25 +224,55 @@ impl DataTrait for Data {
             return 25;
         }
 
-        let needed_avg;
-        let mut needed_length;
-        if period == "MORNING" {
-            needed_avg = self.morning_average;
-            needed_length = self.morning.time.len();
-        } else if period == "AFTERNOON" {
-            needed_avg = self.afternoon_average;
-            needed_length = self.afternoon.time.len();
+        let key = "key".to_string();
+        let mut data_cache = DATA_CACHE.lock().unwrap();
+
+        if let Some(data) = data_cache.cache_get(&key) {
+            // If the data is in the cache and hasn't expired, use it
+            let needed_avg;
+            let mut needed_length;
+            if period == "MORNING" {
+                needed_avg = data.morning_average;
+                needed_length = data.morning.time.len();
+            } else if period == "AFTERNOON" {
+                needed_avg = data.afternoon_average;
+                needed_length = data.afternoon.time.len();
+            } else {
+                needed_avg = data.evening_average;
+                needed_length = data.evening.time.len();
+            }
+
+            if needed_length == 0 {
+                needed_length = 1;
+            }
+
+            let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
+
+            return (suggestion * 5.0).round().abs() as i32;
         } else {
-            needed_avg = self.evening_average;
-            needed_length = self.evening.time.len();
+            let loaded_data = Data::get_data_from_file();
+            data_cache.cache_set(key, loaded_data.clone());
+
+            let needed_avg;
+            let mut needed_length;
+            if period == "MORNING" {
+                needed_avg = loaded_data.morning_average;
+                needed_length = loaded_data.morning.time.len();
+            } else if period == "AFTERNOON" {
+                needed_avg = loaded_data.afternoon_average;
+                needed_length = loaded_data.afternoon.time.len();
+            } else {
+                needed_avg = loaded_data.evening_average;
+                needed_length = loaded_data.evening.time.len();
+            }
+
+            if needed_length == 0 {
+                needed_length = 1;
+            }
+
+            let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
+
+            return (suggestion * 5.0).round().abs() as i32;
         }
-
-        if needed_length == 0 {
-            needed_length = 1;
-        }
-
-        let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
-
-        return (suggestion * 5.0).round().abs() as i32;
     }
 }

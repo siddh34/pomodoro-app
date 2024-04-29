@@ -2,11 +2,10 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 pub mod get_suggestions;
 pub mod history;
+use chrono;
 use get_suggestions::Data;
 use get_suggestions::DataTrait;
-use serde_json::to_string;
 use std::env;
-use chrono;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -18,9 +17,8 @@ async fn start_pomodoro(time_given: String) -> String {
         .output()
         .await;
 
-    let mut data = Data::load_from_env();
+    let mut data = Data::get_data_from_file();
     let current_time = chrono::Local::now().time();
-
     let period = if current_time >= chrono::NaiveTime::from_hms_opt(6, 0, 0).unwrap()
         && current_time < chrono::NaiveTime::from_hms_opt(12, 0, 0).unwrap()
     {
@@ -85,7 +83,7 @@ async fn update_graph() -> String {
 
 #[tauri::command]
 async fn get_suggestion_for_time(time_given: String) -> i32 {
-    let mut data = Data::load_from_env();
+    let mut data = Data::get_data_from_file();
     let suggestion = data.generate_suggestion(time_given);
     return suggestion;
 }
@@ -114,10 +112,6 @@ async fn get_history() -> Result<history::History, history::MyError> {
 }
 
 fn main() {
-    let data = Data::new();
-    let data_string = to_string(&data).expect("Failed to serialize data");
-    env::set_var("suggestion", data_string);
-
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             start_pomodoro,
