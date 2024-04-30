@@ -6,6 +6,7 @@ interface State {
     remainingTime: number;
     lastExecuted: string;
     isTimerStarted: boolean;
+    suggestedTime: number;
 }
 
 const reducer = (
@@ -23,6 +24,8 @@ const reducer = (
             return { ...state, lastExecuted: action.payload };
         case "SET_IS_TIMER_STARTED":
             return { ...state, isTimerStarted: action.payload };
+        case "SET_SUGGESTED_TIME":
+            return { ...state, suggestedTime: action.payload };
         default:
             return state;
     }
@@ -34,6 +37,7 @@ const initialState: State = {
     remainingTime: 60,
     lastExecuted: "",
     isTimerStarted: false,
+    suggestedTime: 0,
 };
 
 export const TimerContext = createContext<{

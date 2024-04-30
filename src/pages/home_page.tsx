@@ -15,7 +15,7 @@ function home_page() {
     const remainingTime = state.remainingTime;
     const lastExecuted = state.lastExecuted;
     const isTimerStarted = state.isTimerStarted;
-
+    const suggestedTime = state.suggestedTime;
     const notifyNotDoable = () => toast.error("Please select a proper time");
 
     useEffect(() => {
@@ -178,6 +178,7 @@ function home_page() {
                     type: "SET_REMAINING_TIME",
                     payload: (response as number + remTime) * 60,
                 });
+                dispatch({ type: "SET_SUGGESTED_TIME", payload: response });
             })
             .catch(console.error);
     };
@@ -264,6 +265,13 @@ function home_page() {
                             >
                                 Suggestions?
                             </button>
+                        </div>
+                        <div className="flex">
+                            <span
+                                className="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-blue-400 border border-blue-400 inline-flex items-center justify-center"
+                            >
+                                Suggested: {suggestedTime}m
+                            </span>
                         </div>
                         <div className="flex flex-col"></div>
                     </div>
