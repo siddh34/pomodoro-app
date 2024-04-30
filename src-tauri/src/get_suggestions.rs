@@ -85,6 +85,8 @@ pub trait DataTrait {
     fn save_to_cache(&self);
 
     fn get_data_from_file() -> Data;
+
+    fn calculcate_suggestion(data: Data, time: i32, period: &str) -> i32;
 }
 
 impl DataTrait for Data {
@@ -99,7 +101,6 @@ impl DataTrait for Data {
         let loaded_data: Data = serde_json::from_reader(reader).unwrap();
         return loaded_data;
     }
-
 
     fn save_to_cache(&self) {
         let key = "key".to_string();
@@ -205,6 +206,29 @@ impl DataTrait for Data {
         }
     }
 
+    fn calculcate_suggestion(data: Data, time: i32, period: &str) -> i32 {
+        let needed_avg;
+        let mut needed_length;
+        if period == "MORNING" {
+            needed_avg = data.morning_average;
+            needed_length = data.morning.time.len();
+        } else if period == "AFTERNOON" {
+            needed_avg = data.afternoon_average;
+            needed_length = data.afternoon.time.len();
+        } else {
+            needed_avg = data.evening_average;
+            needed_length = data.evening.time.len();
+        }
+
+        if needed_length == 0 {
+            needed_length = 1;
+        }
+
+        let suggestion = (needed_avg as f64 - time as f64) / (needed_length as i32 + time + needed_avg) as f64;
+
+        return (suggestion * 5.0).round().abs() as i32;
+    }
+
     fn generate_suggestion(&mut self, time: String) -> i32 {
         let time = time.parse::<i32>().unwrap();
         // check currentTime
@@ -232,51 +256,11 @@ impl DataTrait for Data {
         let mut data_cache = DATA_CACHE.lock().unwrap();
 
         if let Some(data) = data_cache.cache_get(&key) {
-            // If the data is in the cache and hasn't expired, use it
-            let needed_avg;
-            let mut needed_length;
-            if period == "MORNING" {
-                needed_avg = data.morning_average;
-                needed_length = data.morning.time.len();
-            } else if period == "AFTERNOON" {
-                needed_avg = data.afternoon_average;
-                needed_length = data.afternoon.time.len();
-            } else {
-                needed_avg = data.evening_average;
-                needed_length = data.evening.time.len();
-            }
-
-            if needed_length == 0 {
-                needed_length = 1;
-            }
-
-            let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
-
-            return (suggestion * 5.0).round().abs() as i32;
+            return Data::calculcate_suggestion(data.clone(), time, period);
         } else {
             let loaded_data = Data::get_data_from_file();
             data_cache.cache_set(key, loaded_data.clone());
-
-            let needed_avg;
-            let mut needed_length;
-            if period == "MORNING" {
-                needed_avg = loaded_data.morning_average;
-                needed_length = loaded_data.morning.time.len();
-            } else if period == "AFTERNOON" {
-                needed_avg = loaded_data.afternoon_average;
-                needed_length = loaded_data.afternoon.time.len();
-            } else {
-                needed_avg = loaded_data.evening_average;
-                needed_length = loaded_data.evening.time.len();
-            }
-
-            if needed_length == 0 {
-                needed_length = 1;
-            }
-
-            let suggestion = (needed_avg as f64 - time as f64) / needed_length as f64;
-
-            return (suggestion * 5.0).round().abs() as i32;
+            return Data::calculcate_suggestion(loaded_data, time, period);
         }
     }
 }
