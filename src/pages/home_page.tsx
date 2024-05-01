@@ -1,11 +1,12 @@
 import Chart from "../components/charts";
 import TimerToggler from "../components/time_toggler";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useContext } from "react";
 import { TimerContext } from "../context/TimeContext";
 import NumberInput from "../components/customTimeInput";
 import toast, { Toaster } from "react-hot-toast";
+import { open } from "@tauri-apps/api/shell";
 
 function home_page() {
     const navigate = useNavigate();
@@ -267,9 +268,7 @@ function home_page() {
                             </button>
                         </div>
                         <div className="flex">
-                            <span
-                                className="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-blue-400 border border-blue-400 inline-flex items-center justify-center"
-                            >
+                            <span className="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-blue-400 border border-blue-400 inline-flex items-center justify-center">
                                 Suggested: {suggestedTime}m
                             </span>
                         </div>
@@ -293,17 +292,23 @@ function home_page() {
                     </span>
                     <ul className="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-500 dark:text-gray-400 sm:mt-0">
                         <li>
-                            <a
-                                href="#"
+                            <Link
                                 className="hover:underline me-4 md:me-6"
+                                to="/about"
                             >
                                 About
-                            </a>
+                            </Link>
                         </li>
                         <li>
                             <a
-                                href="#"
+                                href="https://github.com/siddh34/pomodoro-app"
                                 className="hover:underline me-4 md:me-6"
+                                onClick={(event) => {
+                                    event.preventDefault();
+                                    open(
+                                        "https://github.com/siddh34/pomodoro-app"
+                                    );
+                                }}
                             >
                                 Github
                             </a>

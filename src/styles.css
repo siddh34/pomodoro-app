@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@font-face {
+    font-family: 'Roboto Slab';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Roboto Slab Regular'), local('RobotoSlab-Regular'), url('../assets/fonts/RobotoSlab-Regular.ttf') format('ttf');
+  } 
+  @font-face {
+    font-family: 'Noto Serif';
+    font-style: normal;
+    font-weight: 400;
+    src: local('Noto Serif Italic'), local('Noto Serif-Italic'), url('../assets/fonts/Noto Serif-Italic.ttf') format('ttf');
+  }    
+    
