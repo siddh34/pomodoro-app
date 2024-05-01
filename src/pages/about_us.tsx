@@ -47,7 +47,7 @@ const AboutUsPage: React.FC = () => {
                 <div className="flex items-center justify-center p-1 m-1 col">
                     <a className="block max-w-sm p-3 bg-white border border-gray-200 rounded-lg shadow hover:bg-gray-100">
                         <h1 className="mb-6 font-roboto-slab">
-                            New Up Coming features
+                            New Upcoming features
                         </h1>
 
                         <li>
