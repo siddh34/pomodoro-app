@@ -2,46 +2,62 @@ import Chart from "../components/charts";
 import TimerToggler from "../components/time_toggler";
 import { useNavigate, Link } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
-import { useEffect, useState } from "react";
+import { useEffect, useContext } from "react";
+import { TimerContext } from "../context/TimeContext";
 import NumberInput from "../components/customTimeInput";
+import toast, { Toaster } from "react-hot-toast";
 
 function home_page() {
     const navigate = useNavigate();
-    const [constTime, setConstTime] = useState(300);
-    const [time, setTime] = useState(0);
-    const [remainingTime, setRemainingTime] = useState(60);
-    const [lastExecuted, setLastExecuted] = useState("");
-    const [isTimerStarted, setIsTimerStarted] = useState(false);
+    const { state, dispatch } = useContext(TimerContext);
+    const constTime = state.constTime;
+    const time = state.time;
+    const remainingTime = state.remainingTime;
+    const lastExecuted = state.lastExecuted;
+    const isTimerStarted = state.isTimerStarted;
+    const suggestedTime = state.suggestedTime;
+    const notifyNotDoable = () => toast.error("Please select a proper time");
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
 
         if (lastExecuted === "break_pomodoro") {
-            setIsTimerStarted(true);
+            dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
             interval = setInterval(() => {
-                console.log(remainingTime);
-                setRemainingTime((prev) => {
-                    if (prev <= 1) {
-                        clearInterval(interval);
-                        setLastExecuted("stop_pomodoro");
-                        return 0;
-                    } else {
-                        setTime(constTime - prev + 1);
-                        return prev - 1;
-                    }
-                });
+                console.log(state.remainingTime);
+                if (state.remainingTime <= 1) {
+                    clearInterval(interval);
+                    dispatch({
+                        type: "SET_LAST_EXECUTED",
+                        payload: "stop_pomodoro",
+                    });
+                    dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
+                } else {
+                    dispatch({
+                        type: "SET_TIME",
+                        payload: state.constTime - state.remainingTime + 1,
+                    });
+                    dispatch({
+                        type: "SET_REMAINING_TIME",
+                        payload: state.remainingTime - 1,
+                    });
+                }
             }, 1000);
         } else if (lastExecuted === "stop_pomodoro") {
-            setIsTimerStarted(false);
+            dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
             if (remainingTime <= 1) {
-                setRemainingTime(60);
+                dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
             }
-            setTime(0.0);
+            dispatch({ type: "SET_TIME", payload: 0.1 });
         } else if (lastExecuted !== "") {
             interval = setInterval(() => {
                 invoke("update_graph")
                     .then((response) => {
-                        if (typeof response === "string" && response.length > 0) {
+                        if (
+                            typeof response === "string" &&
+                            response.length > 0
+                        ) {
+                            console.log(response);
                             const [minutes, seconds] = response.split(":", 2);
                             console.log(minutes, seconds);
                             if (
@@ -50,13 +66,22 @@ function home_page() {
                                 seconds === undefined ||
                                 remainingTime === 0.1
                             ) {
-                                setLastExecuted("stop_pomodoro");
+                                dispatch({
+                                    type: "SET_LAST_EXECUTED",
+                                    payload: "stop_pomodoro",
+                                });
                             } else {
-                                setRemainingTime(
-                                    parseInt(minutes) * 60 + parseInt(seconds)
-                                );
-                                setTime(constTime - remainingTime);
-                                console.log(time)
+                                dispatch({
+                                    type: "SET_REMAINING_TIME",
+                                    payload:
+                                        parseInt(minutes) * 60 +
+                                        parseInt(seconds),
+                                });
+                                dispatch({
+                                    type: "SET_TIME",
+                                    payload: constTime - remainingTime,
+                                });
+                                console.log(time);
                             }
                         }
                     })
@@ -72,15 +97,36 @@ function home_page() {
     }, [lastExecuted, constTime, remainingTime, isTimerStarted]);
 
     const start_pomodoro = () => {
-        // TODO: Add support for custom time
-        setIsTimerStarted(true);
-        invoke("start_pomodoro", { timeGiven: `${(remainingTime / 60).toString()}` })
+        if (remainingTime === 0 || remainingTime === 0.1) {
+            notifyNotDoable();
+            return;
+        }
+
+        let remTime = remainingTime;
+        let resTime;
+        if (remTime % 60 !== 0) {
+            const mins = Math.floor(remTime / 60);
+            const seconds = remTime % 60;
+            resTime = `${mins}m${seconds}s`;
+        } else {
+            resTime = (remTime / 60).toString();
+        }
+        dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+        invoke("start_pomodoro", {
+            timeGiven: `${resTime}`,
+        })
             .then((_) => {
-                setIsTimerStarted(true)
-                setConstTime(remainingTime);
-                setTime(0);
-                setRemainingTime(remainingTime);
-                setLastExecuted("start_pomodoro");
+                dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "start_pomodoro",
+                });
+                dispatch({ type: "SET_CONST_TIME", payload: remainingTime });
+                dispatch({ type: "SET_TIME", payload: 0 });
+                dispatch({
+                    type: "SET_REMAINING_TIME",
+                    payload: remainingTime,
+                });
             })
             .catch((error) => {
                 console.log(error);
@@ -90,10 +136,14 @@ function home_page() {
     const stop_pomodoro = () => {
         invoke("stop_pomodoro")
             .then((_) => {
-                setConstTime(5 * 60);
-                setTime(0.1);
-                setRemainingTime(0);
-                setLastExecuted("stop_pomodoro");
+                dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
+                dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 });
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "stop_pomodoro",
+                });
+                dispatch({ type: "SET_TIME", payload: 0.1 });
+                dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
             })
             .catch((error) => {
                 console.log(error);
@@ -101,27 +151,40 @@ function home_page() {
     };
 
     const break_pomodoro = () => {
-        setIsTimerStarted(true);
+        // setIsTimerStarted(true);
+        dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
         invoke("break_pomodoro", { givenTime: "5" })
             .then((_) => {
-                setLastExecuted("break_pomodoro");
-                setConstTime(5 * 60);
-                setTime(0);
-                setRemainingTime(5 * 60);
+                dispatch({
+                    type: "SET_LAST_EXECUTED",
+                    payload: "break_pomodoro",
+                });
+                dispatch({ type: "SET_CONST_TIME", payload: 5 * 60 });
+                dispatch({ type: "SET_TIME", payload: 0 });
+                dispatch({ type: "SET_REMAINING_TIME", payload: 5 * 60 });
             })
             .catch((error) => {
                 console.log(error);
             });
     };
 
+    const suggestion = () => {
+        let remTime = remainingTime / 60;
+        invoke("get_suggestion_for_time", {
+            timeGiven: `${remTime}`,
+        })
+            .then((response: unknown) => {
+                dispatch({
+                    type: "SET_REMAINING_TIME",
+                    payload: (response as number + remTime) * 60,
+                });
+                dispatch({ type: "SET_SUGGESTED_TIME", payload: response });
+            })
+            .catch(console.error);
+    };
+
     const setRemainingTimer = (time: number) => {
-        if (time <= 0) {
-            setRemainingTime(1); // Set default time to 1 min if time is 0 or negative
-        } else if (time > 120) {
-            setRemainingTime(120); // Set default time to 120 mins if time is greater than 120
-        } else {
-            setRemainingTime(time); // Set the provided time if it's within the valid range
-        }
+        dispatch({ type: "SET_REMAINING_TIME", payload: time });
     };
 
     return (
@@ -132,6 +195,7 @@ function home_page() {
                         Pomodoro App
                     </h1>
                 </div>
+                <Toaster />
                 <div className="flex items-center justify-center m-10">
                     <div className="flex flex-col items-center justify-evenly">
                         <h1>Even Time</h1>
@@ -191,6 +255,23 @@ function home_page() {
                             >
                                 History
                             </button>
+                        </div>
+                        <div className="flex">
+                            <button
+                                onClick={() => {
+                                    suggestion();
+                                }}
+                                className="text-white bg-teal-700 hover:bg-teal-800 focus:ring-4 focus:ring-teal-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-teal-600 dark:hover:bg-teal-700 focus:outline-none dark:focus:ring-teal-800"
+                            >
+                                Suggestions?
+                            </button>
+                        </div>
+                        <div className="flex">
+                            <span
+                                className="bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-semibold me-2 px-2.5 py-0.5 rounded dark:bg-gray-700 dark:text-blue-400 border border-blue-400 inline-flex items-center justify-center"
+                            >
+                                Suggested: {suggestedTime}m
+                            </span>
                         </div>
                         <div className="flex flex-col"></div>
                     </div>

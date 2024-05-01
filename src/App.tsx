@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import { TimerProvider } from "./context/TimeContext";
 import "./App.css";
 
 // pages
@@ -8,6 +9,7 @@ import AboutUsPage from "./pages/about_us";
 
 function App() {
     return (
+        <TimerProvider>
         <Router>
             <Routes>
                 <Route path="/" element={<HomePage />} />
@@ -15,6 +17,7 @@ function App() {
                 <Route path="/about" element={<AboutUsPage/>} /> 
             </Routes>
         </Router>
+        </TimerProvider>
     );
 }
 
