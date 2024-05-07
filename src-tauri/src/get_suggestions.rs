@@ -12,7 +12,7 @@ use std::time::Duration;
 
 lazy_static! {
     pub static ref DATA_CACHE: Mutex<TimedSizedCache<String, Data>> = Mutex::new(
-        TimedSizedCache::with_size_and_lifespan(100, Duration::from_secs(600).as_secs())
+        TimedSizedCache::with_size_and_lifespan(2978, Duration::from_secs(600).as_secs())
     );
 }
 
