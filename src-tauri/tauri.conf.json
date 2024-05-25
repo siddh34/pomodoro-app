@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "pomodoro-app",
-    "version": "0.0.0"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -34,7 +34,7 @@
     "bundle": {
 			"active": true,
 			"targets": "all",
-			"identifier": "com.tauri.dev",
+			"identifier": "com.pomodoro.dev",
 			"icon": [
 				"icons/32x32.png",
 				"icons/128x128.png",
