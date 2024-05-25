@@ -112,10 +112,14 @@ async fn get_history() -> Result<history::History, history::MyError> {
     Ok(history)
 }
 
-async fn send_notification(title: &str, body: &str) {
-    Notification::new(title, body)
+#[tauri::command]
+fn send_notification(title: String, body: String) -> Result<String, String> {
+    Notification::new(&title)
+        .body(&body)
         .show()
-        .expect("Unable to show notification");
+        .map_err(|err| err.to_string())?;
+
+    Ok("Notification sent".into())
 }
 
 fn main() {
@@ -127,6 +131,7 @@ fn main() {
             update_graph,
             get_history,
             get_suggestion_for_time,
+            send_notification
         ])
         .run(tauri::generate_context!())
         .expect("Error executing command");

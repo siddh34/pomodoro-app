@@ -5,8 +5,9 @@ import { invoke } from "@tauri-apps/api/tauri";
 import { useEffect, useContext } from "react";
 import { TimerContext } from "../context/TimeContext";
 import NumberInput from "../components/customTimeInput";
-import toast, { Toaster } from "react-hot-toast";
+// import toast, { Toaster } from "react-hot-toast";
 import { open } from "@tauri-apps/api/shell";
+import { sendNotification } from "@tauri-apps/api/notification";
 
 function home_page() {
     const navigate = useNavigate();
@@ -17,7 +18,7 @@ function home_page() {
     const lastExecuted = state.lastExecuted;
     const isTimerStarted = state.isTimerStarted;
     const suggestedTime = state.suggestedTime;
-    const notifyNotDoable = () => toast.error("Please select a proper time");
+    // const notifyNotDoable = () => toast.error("Please select a proper time");
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -32,6 +33,13 @@ function home_page() {
                         type: "SET_LAST_EXECUTED",
                         payload: "stop_pomodoro",
                     });
+
+                    sendNotification({
+                        title: "Pomodoro App",
+                        body: `Break has been ended`,
+                        icon: "icons/32x32.png",
+                    }); 
+
                     dispatch({ type: "SET_REMAINING_TIME", payload: 0 });
                 } else {
                     dispatch({
@@ -71,6 +79,12 @@ function home_page() {
                                     type: "SET_LAST_EXECUTED",
                                     payload: "stop_pomodoro",
                                 });
+
+                                sendNotification({
+                                    title: "Pomodoro App",
+                                    body: `Pomodoro has been stopped`,
+                                    icon: "icons/32x32.png",
+                                });
                             } else {
                                 dispatch({
                                     type: "SET_REMAINING_TIME",
@@ -99,7 +113,14 @@ function home_page() {
 
     const start_pomodoro = () => {
         if (remainingTime === 0 || remainingTime === 0.1) {
-            notifyNotDoable();
+            // notifyNotDoable();
+
+            sendNotification({
+                    title: "Pomodoro App",
+                    body: `Please select a proper time`,
+                    icon: "icons/32x32.png",
+                });
+
             return;
         }
 
@@ -113,6 +134,20 @@ function home_page() {
             resTime = (remTime / 60).toString();
         }
         dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
+        
+        // invoke("send_notification", {
+        //     title: "Pomodoro Started",
+        //     body: `Pomodoro has been started`,
+        // }).then((res) => {
+        //     console.log(res);
+        // });
+
+        sendNotification({
+					title: "Pomodoro App",
+					body: `Pomodoro has been started`,
+					icon: "icons/32x32.png",
+				});
+        
         invoke("start_pomodoro", {
             timeGiven: `${resTime}`,
         })
@@ -135,6 +170,14 @@ function home_page() {
     };
 
     const stop_pomodoro = () => {
+        // invoke("send_notification", {title: "Pomodoro Stopped", body: "Pomodoro has been stopped"});
+        
+        sendNotification({
+					title: "Pomodoro App",
+					body: `Pomodoro has been stopped`,
+					icon: "icons/32x32.png",
+				});
+
         invoke("stop_pomodoro")
             .then((_) => {
                 dispatch({ type: "SET_IS_TIMER_STARTED", payload: false });
@@ -153,6 +196,18 @@ function home_page() {
 
     const break_pomodoro = () => {
         // setIsTimerStarted(true);
+
+        // invoke("send_notification", {
+        //     title: "Pomodoro break Started",
+        //     body: `Pomodoro break has been started for time 5m`,
+        // });
+
+        sendNotification({
+					title: "Pomodoro App",
+					body: `Pomodoro break has been started for time 5m`,
+					icon: "icons/32x32.png",
+				});
+
         dispatch({ type: "SET_IS_TIMER_STARTED", payload: true });
         invoke("break_pomodoro", { givenTime: "5" })
             .then((_) => {
@@ -196,7 +251,7 @@ function home_page() {
                         Pomodoro App
                     </h1>
                 </div>
-                <Toaster />
+                {/* <Toaster /> */}
                 <div className="flex items-center justify-center m-10">
                     <div className="flex flex-col items-center justify-evenly">
                         <h1>Even Time</h1>

@@ -12,12 +12,15 @@
   },
   "tauri": {
     "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
+			"all": false,
+			"shell": {
+				"all": false,
+				"open": true
+			},
+      "notification": {
+        "all": true
       }
-    },
+		},
     "windows": [
       {
         "title": "pomodoro-app",
@@ -37,11 +40,16 @@
 				"icons/128x128.png",
 				"icons/128x128@2x.png",
 				"icons/icon.icns",
-				"icons/icon.ico"
-			],
-			"features": {
-				"notification": true
-			}
+				"icons/icon.ico",
+        "icons/Square30x30Logo.png",
+        "icons/Square44x44Logo.png",
+        "icons/Square71x71Logo.png",
+        "icons/Square89x89Logo.png",
+        "icons/Square142x142Logo.png",
+        "icons/Square150x150Logo.png",
+        "icons/Square310x310Logo.png",
+        "icons/StoreLogo.png"
+			]
 		}
   }
 }
