@@ -6,6 +6,7 @@ use chrono;
 use get_suggestions::Data;
 use get_suggestions::DataTrait;
 use std::env;
+use tauri::api::notification::Notification;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -109,6 +110,12 @@ async fn get_history() -> Result<history::History, history::MyError> {
         })?;
 
     Ok(history)
+}
+
+async fn send_notification(title: &str, body: &str) {
+    Notification::new(title, body)
+        .show()
+        .expect("Unable to show notification");
 }
 
 fn main() {
