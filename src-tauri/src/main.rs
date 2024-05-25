@@ -6,6 +6,7 @@ use chrono;
 use get_suggestions::Data;
 use get_suggestions::DataTrait;
 use std::env;
+use tauri::api::notification::Notification;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -111,6 +112,16 @@ async fn get_history() -> Result<history::History, history::MyError> {
     Ok(history)
 }
 
+#[tauri::command]
+fn send_notification(title: String, body: String) -> Result<String, String> {
+    Notification::new(&title)
+        .body(&body)
+        .show()
+        .map_err(|err| err.to_string())?;
+
+    Ok("Notification sent".into())
+}
+
 fn main() {
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
@@ -120,6 +131,7 @@ fn main() {
             update_graph,
             get_history,
             get_suggestion_for_time,
+            send_notification
         ])
         .run(tauri::generate_context!())
         .expect("Error executing command");
