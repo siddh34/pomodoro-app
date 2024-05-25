@@ -1,9 +1,7 @@
 name: 'release only app binaries'
 
 on:
-  push:
-    branches:
-      - release
+  workflow_dispatch:
 
 jobs:
   publish-tauri:
