@@ -11,7 +11,6 @@
     "version": "1.0.1"
   },
   "tauri": {
-    "tauri": {
     "updater": {
       "active": true,
       "endpoints": [
@@ -19,7 +18,6 @@
       ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEYxQkFGNTBFMzQ4QUY4NjkKUldScCtJbzBEdlc2OFZjQW5NRWRiUi93Y0NuTlh0a2Y2ZmtiYnJnSjVTeU50eWJXa1JFN05wd0EK"
-    }
     },
     "allowlist": {
 			"all": false,
